@@ -1,0 +1,9 @@
+{application,spooky,
+             [{description,[]},
+              {vsn,"1"},
+              {registered,[]},
+              {applications,[kernel,stdlib]},
+              {env,[]},
+              {modules,[executor,executor_server,spooky,spooky_server,
+                        spooky_sessions,spooky_state,spooky_static,
+                        spooky_test,uuid]}]}.
