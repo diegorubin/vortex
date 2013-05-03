@@ -3,7 +3,7 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--export([getpage/1]).
+-export([getpage/1, getlinks/1]).
 
 getpage(Uri) ->
   inets:start(),
@@ -15,6 +15,19 @@ getpage(Uri) ->
   inets:stop(httpc, Pid),
 
   {ok, Body}.
+
+getlinks(Uri) ->
+  {ok, Page} = getpage(Uri),
+  Result = re:run(Page,"<a.*?href=['\"](.*?)['\"].*?>",[global, {capture, [1], list}]),
+  
+  case Result of
+    {match, Links} ->
+      Links;
+    nomatch ->
+      [];
+    _Else ->
+      []
+  end.
 
 %
 % tests
