@@ -18,25 +18,54 @@ getpage(Uri) ->
 
 getlinks(Uri) -> getlinks(Uri, []).
 
-getlinks(Uri, _Domains) ->
+getlinks(Uri, Domains) ->
   {ok, Page} = getpage(Uri),
   Result = re:run(Page,"<a.*?href=['\"](.*?)['\"].*?>",[global, {capture, [1], list}]),
   
-  case Result of
+
+  UriWithDomains = case Result of
     {match, Links} ->
       put_domain_in_local_paths(Links, Uri);
-    nomatch ->
-      [];
     _Else ->
       []
-  end.
+  end,
+
+  exclude_in_links(UriWithDomains, Domains).
 
 %
 % Private functions
 %
-%exlude_in_links(Links, Domains) ->
-%  Links.
 
+% - exclude_in_links
+exclude_in_links(Links, Domains) ->
+  exclude_in_links(Links, Domains, []).
+
+exclude_in_links(ResultLinks, [], []) ->
+
+  ResultLinks;
+
+exclude_in_links([], Domains, ResultLinks) ->
+
+  [_|RestDomains] = Domains,
+
+  exclude_in_links(ResultLinks, RestDomains, []);
+
+exclude_in_links(Links, Domains, ResultLinks) ->
+  [Domain|_] = Domains,
+
+  [Uri|RestLinks] = Links,
+
+  Result = re:run(Uri, "^https?://([0-9a-zA-Z-.]+)/?",[{capture,[1],list}]),
+  {match, [LinkDomain]} = Result,
+
+  case LinkDomain of
+    Domain ->
+      exclude_in_links(RestLinks, Domains, ResultLinks);
+    _Else ->
+      exclude_in_links(RestLinks, Domains, [Uri|ResultLinks])
+  end.
+
+% - put_domain_in_local_paths
 put_domain_in_local_paths(Links, Uri) ->
 
   Result = re:run(Uri, "^(https?://[0-9a-zA-Z-.]+)/?",[{capture,[1],list}]),
