@@ -3,7 +3,7 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--export([getpage/1, getlinks/1, getlinks/2]).
+-export([getpage/1, getlinks/1, getlinks/2, getlinksfromdomains/2]).
 
 getpage(Uri) ->
   inets:start(),
@@ -19,22 +19,31 @@ getpage(Uri) ->
 getlinks(Uri) -> getlinks(Uri, []).
 
 getlinks(Uri, Domains) ->
-  {ok, Page} = getpage(Uri),
-  Result = re:run(Page,"<a.*?href=['\"](.*?)['\"].*?>",[global, {capture, [1], list}]),
-  
 
-  UriWithDomains = case Result of
-    {match, Links} ->
-      put_domain_in_local_paths(Links, Uri);
-    _Else ->
-      []
-  end,
+  UriWithDomains = put_domain_in_local_paths(getrawlinks(Uri), Uri),
+  exclude_in_links(UriWithDomains, Domains).
+
+getlinksfromdomains(Uri, Domains) ->
+
+  UriWithDomains = put_domain_in_local_paths(getrawlinks(Uri), Uri),
 
   UriWithDomains -- exclude_in_links(UriWithDomains, Domains).
 
 %
 % Private functions
 %
+
+% - getrawlinks
+getrawlinks(Uri) ->
+  {ok, Page} = getpage(Uri),
+  Result = re:run(Page,"<a.*?href=['\"](.*?)['\"].*?>",[global, {capture, [1], list}]),
+
+  case Result of
+    {match, Links} ->
+      Links;
+    _Else ->
+      []
+  end.
 
 % - exclude_in_links
 exclude_in_links(Links, Domains) ->
