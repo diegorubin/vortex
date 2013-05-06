@@ -7,7 +7,7 @@
          stop/1]).
 
 start(_Type, _Args) ->
-  spooky:start_link(vortex_server).
+  ok.
 
 stop(_State) ->
-  spooky:stop().
+  ok.
