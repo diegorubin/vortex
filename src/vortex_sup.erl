@@ -1,10 +1,10 @@
-%% @author author <author@example.com>
-%% @copyright YYYY author.
+%% @author Diego Rubin <rubin.diego@gmail.com>
+%% @copyright 2013 Diego Rubin.
 
 %% @doc Supervisor for the vortex application.
 
 -module(vortex_sup).
--author('author <author@example.com>').
+-author('Diego Rubin <rubin.diego@gmail.com>').
 
 -behaviour(supervisor).
 

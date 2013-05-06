@@ -1,10 +1,10 @@
-%% @author author <author@example.com>
-%% @copyright YYYY author.
+%% @author Diego Rubin <rubin.diego@gmail.com>
+%% @copyright 2013 Diego Rubin.
 
 %% @doc vortex startup code
 
 -module(vortex).
--author('author <author@example.com>').
+-author('Diego Rubin <rubin.diego@gmail.com>').
 -export([start/0, start_link/0, stop/0]).
 
 ensure_started(App) ->
