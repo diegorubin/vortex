@@ -3,16 +3,16 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--export([getpage/1, getlinks/1, getlinks/2, getlinksfromdomains/2]).
+-export([getpage/1, getlinks/1, getlinks/2, getlinksfromdomains/2, search_for_links/2]).
 
 getpage(Uri) ->
-  inets:start(),
-  {ok, Pid} = inets:start(httpc, [{profile, vortex_getpage}]),
+  %inets:start(),
+  %{ok, Pid} = inets:start(httpc, [{profile, vortex_getpage}]),
 
   {ok, {{_Version, 200, _ReasonPhrase}, _Headers, Body}} =
     httpc:request(get, {Uri, []}, [], []),
 
-  inets:stop(httpc, Pid),
+  %inets:stop(httpc, Pid),
 
   {ok, Body}.
 
@@ -107,6 +107,23 @@ put_domain_in_local_paths(Links, Domain, Uri, NewLinks) ->
           put_domain_in_local_paths(RestLinks, Domain, Uri, [[string:concat(Uri, string:concat("/", Path))]|NewLinks])
       end
   end.
+
+search_for_links([], AllLinks) ->
+  AllLinks;
+search_for_links(Links, AllLinks) ->
+  [[Link|_]|RestLinks] = Links,
+
+  NextLink = [Link] -- AllLinks,
+
+  NewAllLinks = [NextLink] ++ AllLinks,
+  case NextLink of
+    [] ->
+      TotalLinks = RestLinks;
+    [Next|_] ->
+      TotalLinks = vortex_extractdata:getlinksfromdomains(Next, ["diegorubin.com"]) ++ RestLinks
+  end,
+
+  spawn(fun() -> search_for_links(TotalLinks, NewAllLinks) end).
 
 %
 % tests
