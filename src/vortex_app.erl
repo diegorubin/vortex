@@ -1,10 +1,9 @@
-%% @author author <author@example.com>
-%% @copyright YYYY author.
+%% @author Diego Rubin <rubin.diego@gmail.com>
 
 %% @doc Callbacks for the vortex application.
 
 -module(vortex_app).
--author('author <author@example.com>').
+-author('Diego Rubin <rubin.diego@gmail.com>').
 
 -behaviour(application).
 -export([start/2,stop/1]).

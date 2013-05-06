@@ -1,0 +1,9 @@
+{application,vortex,
+             [{description,"vortex"},
+              {vsn,"1"},
+              {modules,[vortex,vortex_app,vortex_extractdata,vortex_resource,
+                        vortex_sup]},
+              {registered,[]},
+              {applications,[kernel,stdlib,inets,crypto,mochiweb,webmachine]},
+              {mod,{vortex_app,[]}},
+              {env,[]}]}.

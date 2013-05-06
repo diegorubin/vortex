@@ -1,6 +1,6 @@
-%% @author author <author@example.com>
-%% @copyright YYYY author.
-%% @doc Example webmachine_resource.
+%% @author Diego Rubin <rubin.diego@gmail.com>
+%% @copyright 2013 Diego Rubin.
+%% @doc webmachine_resource.
 
 -module(vortex_resource).
 -export([init/1, to_html/2]).
