@@ -36,13 +36,13 @@ init([ConnInfo]) ->
   {ok, ConnInfo}.
 
 handle_call({save_page, Page}, _From, ConnInfo) ->
-  RiakPid = csd_riak:connect(ConnInfo),
-  SavedPage = csd_page:save(RiakPid, Page),
+  RiakPid = vortex_riak:connect(ConnInfo),
+  SavedPage = vortex_page:save(RiakPid, Page),
   {reply, SavedPage, ConnInfo};
 
 handle_call({get_page, PageKey}, _From, ConnInfo) ->
-  RiakPid = csd_riak:connect(ConnInfo),
-  Page = csd_page:fetch(RiakPid, PageKey),
+  RiakPid = vortex_riak:connect(ConnInfo),
+  Page = vortex_page:fetch(RiakPid, PageKey),
   {reply, Page, ConnInfo};
 
 handle_call(_Request, _From, State) ->
