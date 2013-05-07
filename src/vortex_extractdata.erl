@@ -108,6 +108,7 @@ put_domain_in_local_paths(Links, Domain, Uri, NewLinks) ->
       end
   end.
 
+% - search_for_links
 search_for_links([], AllLinks) ->
   AllLinks;
 search_for_links(Links, AllLinks) ->
