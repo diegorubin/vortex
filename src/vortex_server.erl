@@ -22,11 +22,11 @@ start_link() ->
   ConnInfo = vortex_riak_config:connection_info(),
   gen_server:start_link({local, ?SERVER}, ?MODULE, [ConnInfo], []).
 
-%save_snippet(Snippet) ->
-%  gen_server:call(?SERVER, {save_snippet, Snippet}, infinity).
-%
-%get_snippet(SnippetKey) ->
-%  gen_server:call(?SERVER, {get_snippet, SnippetKey}, infinity).
+save_snippet(Page) ->
+  gen_server:call(?SERVER, {save_snippet, Page}, infinity).
+
+get_snippet(PageKey) ->
+  gen_server:call(?SERVER, {get_snippet, PageKey}, infinity).
 
 %% ------------------------------------------------------------------
 %% gen_server Function Definitions
@@ -35,15 +35,15 @@ start_link() ->
 init([ConnInfo]) ->
   {ok, ConnInfo}.
 
-handle_call({save_snippet, Snippet}, _From, ConnInfo) ->
+handle_call({save_snippet, Page}, _From, ConnInfo) ->
   RiakPid = csd_riak:connect(ConnInfo),
-  SavedSnippet = csd_snippet:save(RiakPid, Snippet),
-  {reply, SavedSnippet, ConnInfo};
+  SavedPage = csd_snippet:save(RiakPid, Page),
+  {reply, SavedPage, ConnInfo};
 
-handle_call({get_snippet, SnippetKey}, _From, ConnInfo) ->
+handle_call({get_snippet, PageKey}, _From, ConnInfo) ->
   RiakPid = csd_riak:connect(ConnInfo),
-  Snippet = csd_snippet:fetch(RiakPid, SnippetKey),
-  {reply, Snippet, ConnInfo};
+  Page = csd_snippet:fetch(RiakPid, PageKey),
+  {reply, Page, ConnInfo};
 
 handle_call(_Request, _From, State) ->
   {noreply, ok, State}.

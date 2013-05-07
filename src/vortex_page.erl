@@ -3,10 +3,10 @@
 
 -define(BUCKET, <<"pages">>).
 
-to_page(Uri, Title, Body) ->
+to_page(Domain, Title, Body) ->
   {page,
     [
-      {uri, Uri},
+      {domain, Domain},
       {title, Title},
       {body, Body}
     ]
@@ -44,7 +44,7 @@ to_json_internal(PageData) ->
 from_json_internal(PageJson) ->
   {page, csd_json:from_json(PageJson, fun is_string/1)}.
 
-is_string(uri) -> true;
+is_string(domain) -> true;
 is_string(title) -> true;
 is_string(body) -> true;
 is_string(_) -> false.
