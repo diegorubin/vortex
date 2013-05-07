@@ -4,11 +4,16 @@
 -define(BUCKET, <<"pages">>).
 
 to_page(Domain, Title, Body) ->
+  {{Year, Month, Day},{Hour, Minute, Second}} = erlang:universaltime(),
+  ReadAt = vortex_json:to_json([{year, Year}, {month, Month}, {day, Day}, {hour, Hour},
+                                {minute, Minute}, {second, Second}]),
+
   {page,
     [
       {domain, Domain},
       {title, Title},
-      {body, Body}
+      {body, Body},
+      {readat, ReadAt}
     ]
   }.
 
@@ -47,5 +52,6 @@ from_json_internal(PageJson) ->
 is_string(domain) -> true;
 is_string(title) -> true;
 is_string(body) -> true;
+is_string(readat) -> true;
 is_string(_) -> false.
 
