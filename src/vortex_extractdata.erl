@@ -6,13 +6,13 @@
 -export([getpage/1, getlinks/1, getlinks/2, getlinksfromdomains/2, search_for_links/2]).
 
 getpage(Uri) ->
-  %inets:start(),
-  %{ok, Pid} = inets:start(httpc, [{profile, vortex_getpage}]),
+  inets:start(),
+  {ok, Pid} = inets:start(httpc, [{profile, vortex_getpage}]),
 
   {ok, {{_Version, 200, _ReasonPhrase}, _Headers, Body}} =
     httpc:request(get, {Uri, []}, [], []),
 
-  %inets:stop(httpc, Pid),
+  inets:stop(httpc, Pid),
 
   {ok, Body}.
 
