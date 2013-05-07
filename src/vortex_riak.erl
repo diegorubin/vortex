@@ -10,9 +10,6 @@
 %% Riak exports
 -export([connect/1, create/3, create/4, fetch/3, update/2, get_value/1, save/2]).
 
-%% helper functions for generating unique keys.
--export([new_key/0, new_key/1]).
-
 %% ----------------------------------------------- Exported Functions
 
 %% @spec connect(connection_info()) -> pid()
