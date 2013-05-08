@@ -113,8 +113,9 @@ put_domain_in_local_paths(Links, Domain, Uri, NewLinks) ->
 
 % - search_for_links
 search_for_links(Uri) ->
-  {ok, File} = file:open(string:concat("uris/",Uri),write),
-  file:open(File),
+  FileName = lists:flatten([C || C <- Uri, C /= $/, C /= $:]),
+  {ok, File} = file:open(FileName, write),
+  file:close(File),
   % Verificar se existe a pagina no banco
   % Verificar se faz tempo que foi lida
 
