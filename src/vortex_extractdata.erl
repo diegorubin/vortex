@@ -3,11 +3,14 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--export([getpage/1, getlinks/1, getlinks/2, getlinksfromdomains/2, search_for_links/2]).
+-export([getpage/1, getlinks/1, getlinks/2, getlinksfromdomains/2, search_for_links/1]).
 
 getpage(Uri) ->
   inets:start(),
-  {ok, Pid} = inets:start(httpc, [{profile, vortex_getpage}]),
+
+  KeyInet = list_to_atom(lists:flatten(io_lib:format("atom~p", [erlang:phash2(Uri)]))),
+
+  {ok, Pid} = inets:start(httpc, [{profile, KeyInet}]),
 
   {ok, {{_Version, 200, _ReasonPhrase}, _Headers, Body}} =
     httpc:request(get, {Uri, []}, [], []),
@@ -109,22 +112,18 @@ put_domain_in_local_paths(Links, Domain, Uri, NewLinks) ->
   end.
 
 % - search_for_links
-search_for_links([], AllLinks) ->
-  AllLinks;
-search_for_links(Links, AllLinks) ->
-  [[Link|_]|RestLinks] = Links,
+search_for_links(Uri) ->
+  {ok, File} = file:open(string:concat("uris/",Uri),write),
+  file:open(File),
+  % Verificar se existe a pagina no banco
+  % Verificar se faz tempo que foi lida
 
-  NextLink = [Link] -- AllLinks,
+  % logica de indexacao
 
-  NewAllLinks = [NextLink] ++ AllLinks,
-  case NextLink of
-    [] ->
-      TotalLinks = RestLinks;
-    [Next|_] ->
-      TotalLinks = vortex_extractdata:getlinksfromdomains(Next, ["diegorubin.com"]) ++ RestLinks
-  end,
+  % abrir novo thread para cada link
+  Links = getlinks(Uri),
 
-  spawn(fun() -> search_for_links(TotalLinks, NewAllLinks) end).
+  [spawn(fun() -> search_for_links(Link) end) || [Link] <- Links].
 
 %
 % tests
