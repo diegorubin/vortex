@@ -3,8 +3,11 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--export([getpage/1, getlinks/1, getlinks/2, getlinksfromdomains/2, search_for_links/1]).
+-export([getpage/1, getlinks/1, getlinks/2, getlinksfromdomains/2,
+         search_for_links/1, search_for_links_in_domains/2,
+         save_images_in_page/1]).
 
+% - getpage
 getpage(Uri) ->
   inets:start(),
 
@@ -12,13 +15,22 @@ getpage(Uri) ->
 
   {ok, Pid} = inets:start(httpc, [{profile, KeyInet}]),
 
-  {ok, {{_Version, 200, _ReasonPhrase}, _Headers, Body}} =
+  {ok, {{_Version, StatusCode, _ReasonPhrase}, Headers, Content}} =
     httpc:request(get, {Uri, []}, [], []),
+
+  [ContentType|_] = [CT || {"content-type", CT} <- Headers],
 
   inets:stop(httpc, Pid),
 
-  {ok, Body}.
+  {ok, 
+    {
+      {statuscode, StatusCode}, 
+      {contenttype, ContentType}, 
+      {content, Content}
+    }
+  }.
 
+% - getlinks
 getlinks(Uri) -> getlinks(Uri, []).
 
 getlinks(Uri, Domains) ->
@@ -26,11 +38,40 @@ getlinks(Uri, Domains) ->
   UriWithDomains = put_domain_in_local_paths(getrawlinks(Uri), Uri),
   exclude_in_links(UriWithDomains, Domains).
 
+% - getlinksfromdomains
 getlinksfromdomains(Uri, Domains) ->
 
   UriWithDomains = put_domain_in_local_paths(getrawlinks(Uri), Uri),
 
   UriWithDomains -- exclude_in_links(UriWithDomains, Domains).
+
+% - search_for_links
+search_for_links(Uri) ->
+  FileName = lists:flatten([C || C <- Uri, C /= $/, C /= $:, C /= $#]),
+  Result = file:open(FileName, [read]),
+
+  case Result of
+    {error, enoent} ->
+      Links = getlinks(Uri),
+
+      [spawn(fun() -> search_for_links(Link) end) || [Link] <- Links];
+    {ok, FileId} ->
+      file:close(FileId)
+  end.
+
+% - search_for_links_in_domains
+search_for_links_in_domains(Uri, Domains) ->
+  FileName = lists:flatten([C || C <- Uri, C /= $/, C /= $:]),
+  Result = file:open(FileName, [read]),
+
+  case Result of
+    {error, enoent} ->
+      Links = getlinksfromdomains(Uri, Domains),
+
+      [spawn(fun() -> search_for_links_in_domains(Link, Domains) end) || [Link] <- Links];
+    {ok, FileId} ->
+      file:close(FileId)
+  end.
 
 %
 % Private functions
@@ -38,7 +79,34 @@ getlinksfromdomains(Uri, Domains) ->
 
 % - getrawlinks
 getrawlinks(Uri) ->
-  {ok, Page} = getpage(Uri),
+  {ok, 
+    {
+      {statuscode, _StatusCode},
+      {contenttype, _ContentType},
+      {content, Page}
+    }
+  } = getpage(Uri),
+
+  % Sera substituido pela chave do banco
+  FileName = lists:flatten([C || C <- Uri, C /= $/, C /= $:, C /= $#]),
+  OpenResult = file:open(FileName, [read]),
+
+  case OpenResult of
+    {error, enoent} ->
+
+      % Substitutir para salvar no banco
+      {ok, File} = file:open(FileName, write),
+      io:format(File, "~s", [Page]),
+      file:close(File);
+      % Verificar se faz tempo que foi lida
+
+      % logica de indexacao
+
+      % abrir novo thread para cada link
+    {ok, FileId} ->
+      file:close(FileId)
+  end,
+
   Result = re:run(Page,"<a.*?href=['\"](.*?)['\"].*?>",[global, {capture, [1], list}]),
 
   case Result of
@@ -111,20 +179,17 @@ put_domain_in_local_paths(Links, Domain, Uri, NewLinks) ->
       end
   end.
 
-% - search_for_links
-search_for_links(Uri) ->
-  FileName = lists:flatten([C || C <- Uri, C /= $/, C /= $:]),
-  {ok, File} = file:open(FileName, write),
-  file:close(File),
-  % Verificar se existe a pagina no banco
-  % Verificar se faz tempo que foi lida
+% - save_images_in_page 
+save_images_in_page(Uri, Page) ->
 
-  % logica de indexacao
+  Result = re:run(Page,"<img.*?src=['\"](.*?)['\"].*?>",[global, {capture, [1], list}]),
 
-  % abrir novo thread para cada link
-  Links = getlinks(Uri),
-
-  [spawn(fun() -> search_for_links(Link) end) || [Link] <- Links].
+  case Result of
+    {match, Links} ->
+      Links;
+    _Else ->
+      []
+  end.
 
 %
 % tests
