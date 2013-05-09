@@ -5,7 +5,7 @@
 
 -export([getpage/1, getlinks/1, getlinks/2, getlinksfromdomains/2,
          search_for_links/1, search_for_links_in_domains/2,
-         save_images_in_page/1]).
+         save_images_in_page/2]).
 
 % - getpage
 getpage(Uri) ->
@@ -97,12 +97,16 @@ getrawlinks(Uri) ->
       % Substitutir para salvar no banco
       {ok, File} = file:open(FileName, write),
       io:format(File, "~s", [Page]),
-      file:close(File);
+      file:close(File),
       % Verificar se faz tempo que foi lida
 
       % logica de indexacao
 
       % abrir novo thread para cada link
+
+      % Salvar imagem no banco
+      % Remover isso assim q possivel e colocar no banco.
+      save_images_in_page(Uri, Page);
     {ok, FileId} ->
       file:close(FileId)
   end,
@@ -184,12 +188,38 @@ save_images_in_page(Uri, Page) ->
 
   Result = re:run(Page,"<img.*?src=['\"](.*?)['\"].*?>",[global, {capture, [1], list}]),
 
-  case Result of
+  Images = case Result of
     {match, Links} ->
-      Links;
+      Links,
+      put_domain_in_local_paths(Links, Uri);
     _Else ->
       []
+  end,
+
+  [save_image(Image) || [Image] <- Images].
+
+save_image(Image) ->
+  {ok, 
+    {
+      {statuscode, _StatusCode},
+      {contenttype, _ContentType},
+      {content, Content}
+    }
+  } = getpage(Image),
+
+  FileName = case re:run(Image, "/([^/?]+)[\\?$]", [global, {capture, [1], list}]) of
+    {match, [[X]]} -> X;
+    nomatch -> lists:flatten(io_lib:format("~p.jpg", [erlang:phash2(Image)]))
+  end,
+
+  case file:open(FileName, [write, binary]) of
+    {ok, File} ->
+      file:write(File, Content),
+      file:close(File);
+    _Else ->
+      nosave
   end.
+
 
 %
 % tests
