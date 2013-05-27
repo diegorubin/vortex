@@ -6,14 +6,14 @@
 index(Page) ->
   CleanedPage = clean(Page),
 
-  Words = string:tokens(CleanedPage, ";,. ?"),
+  Words = string:tokens(CleanedPage, ";,. ?\n\r{}()"),
   count(lists:sort([ string:to_lower(X) || X <- Words ])).
   
 
 % - clean
 %   Remove tags html.
 clean(Page) ->
-  re:replace(Page, "<[^>]*>", "", [global]).
+  re:replace(Page, "<[^>]*>", "", [global, {return, list}]).
 
 % - count
 % - Pontua as palavras
