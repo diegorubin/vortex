@@ -220,11 +220,3 @@ save_image(Image) ->
       nosave
   end.
 
-
-%
-% tests
-%
-getpage_test_() ->
-  _Body = getpage("http://google.com"),
-  ok.
-

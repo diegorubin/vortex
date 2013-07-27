@@ -2,7 +2,15 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
-getpage_test() ->
+increment(N) -> N + 1.
 
-  ?assertMatch().
+getpage_test() ->
+  [{"inc by 0",
+    fun () ->
+        ?assertEqual(1, increment(0))
+    end},
+   {"inc by 1",
+    ?_test(?assertEqual(2, increment(1)))}].
+
+
 
