@@ -8,7 +8,7 @@ ifeq ($(REBAR),)
 $(error "Rebar not available on this system")
 endif
 
-.PHONY: deps
+.PHONY: test deps
 
 all: deps
 	@./rebar compile
@@ -25,7 +25,7 @@ distclean: clean
 docs:
 	@erl -noshell -run edoc_run application '$(APP)' '"."' '[]'
 
-tests:
+test:
 	@./rebar -C test.config skip_deps=true eunit
 
 shell:
