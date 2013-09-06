@@ -10,7 +10,7 @@ endif
 
 .PHONY: test deps
 
-all: deps
+all:
 	@./rebar compile
 
 deps:

@@ -1,11 +1,8 @@
 {application,vortex,
              [{description,"vortex"},
               {vsn,"1"},
-              {modules,[vortex,vortex_app,vortex_domain_resource,
-                        vortex_extractdata,vortex_indexer,vortex_json,
-                        vortex_page,vortex_resource,vortex_riak,
-                        vortex_riak_config,vortex_server,vortex_sup]},
+              {modules,[vortex,vortex_app,vortex_extractdata]},
               {registered,[]},
-              {applications,[kernel,stdlib,inets,crypto,mochiweb,webmachine]},
+              {applications,[kernel,stdlib]},
               {mod,{vortex_app,[]}},
               {env,[]}]}.
