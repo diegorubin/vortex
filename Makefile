@@ -26,6 +26,7 @@ docs:
 	@erl -noshell -run edoc_run application '$(APP)' '"."' '[]'
 
 test:
+	rm -rf .eunit
 	@./rebar -C test.config skip_deps=true eunit
 
 shell:

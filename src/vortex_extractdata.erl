@@ -110,7 +110,6 @@ exclude_in_links(Links, Domains, ResultLinks) ->
 
 % - put_domain_in_local_paths
 put_domain_in_local_paths(Links, Uri) ->
-
   Result = re:run(Uri, "^(https?://[0-9a-zA-Z-.]+)/?",[{capture,[1],list}]),
   {match, [Domain]} = Result,
 
@@ -119,6 +118,7 @@ put_domain_in_local_paths(Links, Uri) ->
 put_domain_in_local_paths([], _Domain, _Uri, NewLinks) ->
   NewLinks;
 put_domain_in_local_paths(Links, Domain, Uri, NewLinks) ->
+
 
   [Link|RestLinks] = Links,
 
@@ -139,7 +139,7 @@ put_domain_in_local_paths(Links, Domain, Uri, NewLinks) ->
           put_domain_in_local_paths(RestLinks, Domain, Uri, [Link|NewLinks]);
         nomatch ->
           [Path|_] = Link,
-          put_domain_in_local_paths(RestLinks, Domain, Uri, [[string:concat(Uri, string:concat("/", Path))]|NewLinks])
+          put_domain_in_local_paths(RestLinks, Domain, Uri, [[string:concat(Domain, string:concat("/", Path))]|NewLinks])
       end
   end.
 
