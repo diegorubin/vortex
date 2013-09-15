@@ -10,8 +10,7 @@
 %% @spec start_link() -> {ok,Pid::pid()}
 %% @doc Starts the app for inclusion in a supervisor tree
 start_link() ->
-%    vortex_sup:start_link().
-    ok.
+    vortex_sup:start_link().
 
 %% @spec start() -> ok
 %% @doc Start the vortex server.
