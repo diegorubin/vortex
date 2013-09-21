@@ -1,7 +1,7 @@
 -module(vortex_extractdata).
 -author('rubin.diego@gmail.com').
 
--export([getlinks/1, getlinks/2]).
+-export([getlinks/1, getlinks/2, getpage/1]).
 
 % - getlinks
 getlinks(Uri) -> getlinks(Uri, []).

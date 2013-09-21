@@ -5,12 +5,7 @@
 
 -module(vortex).
 -author('Diego Rubin <rubin.diego@gmail.com>').
--export([start/0, start_link/0, stop/0]).
-
-%% @spec start_link() -> {ok,Pid::pid()}
-%% @doc Starts the app for inclusion in a supervisor tree
-start_link() ->
-    vortex_sup:start_link().
+-export([start/0, stop/0]).
 
 %% @spec start() -> ok
 %% @doc Start the vortex server.
