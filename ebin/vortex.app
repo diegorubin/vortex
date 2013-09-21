@@ -5,6 +5,6 @@
                         vortex_page,vortex_riak,vortex_riak_config,
                         vortex_sup]},
               {registered,[]},
-              {applications,[kernel,stdlib]},
+              {applications,[kernel,stdlib,riakc]},
               {mod,{vortex_app,[]}},
               {env,[]}]}.

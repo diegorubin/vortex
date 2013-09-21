@@ -18,7 +18,7 @@ to_page(Domain, Title, Body) ->
   }.
 
 to_json({page, PageData}) ->
-  jiffy:encode(PageData).
+  to_json_internal(PageData).
 
 from_json(PageJson) ->
   from_json_internal(PageJson).

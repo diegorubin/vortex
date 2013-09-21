@@ -10,9 +10,15 @@
 %% @spec start() -> ok
 %% @doc Start the vortex server.
 start() ->
-    application:start(vortex).
+  application:start(protobuffs),
+  application:start(riak_pb),
+  application:start(riakc),
+  application:start(vortex).
 
 %% @spec stop() -> ok
 %% @doc Stop the vortex server.
 stop() ->
-    application:stop(vortex).
+  application:stop(protobuffs),
+  application:stop(riak_pb),
+  application:stop(riakc),
+  application:stop(vortex).

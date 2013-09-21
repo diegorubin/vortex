@@ -2,7 +2,7 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
-to_json_test_() ->
+to_page_test_() ->
   [{"create page struct",
     fun() -> 
 
