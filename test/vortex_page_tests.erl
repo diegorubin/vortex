@@ -17,3 +17,31 @@ to_page_test_() ->
                            {readat, ReadAt}]}, Result)
     end}].
 
+save_test_() ->
+  [{"create page struct",
+    fun() -> 
+      {page, PageData} = vortex_page:to_page("http://diegorubin.com",
+                                   "Página Pessoal", "<html></html>"),
+      Page = {page, [{key, vortex_riak:new_key("http://diegorubin.com/")} | PageData]},
+      Result = vortex_page:save({page, PageData}, "http://diegorubin.com/"),
+      vortex_page:delete("http://diegorubin.com/"),
+      ?assertEqual(Page, Result)
+    end}].
+
+update_test_() ->
+  [{"update page struct",
+    fun() -> 
+      {page, PageData} = vortex_page:to_page("http://diegorubin.com",
+                                   "Página Pessoal", "<html></html>"),
+
+      vortex_page:save({page, PageData}, "http://diegorubin.com/"),
+
+      {page, NewPageData} = vortex_page:to_page("http://diegorubin.com",
+                                   "Minha", "<html></html>"),
+      Page = {page, [{key, vortex_riak:new_key("http://diegorubin.com/")} | NewPageData]},
+      Result = vortex_page:save(Page, "http://diegorubin.com/"),
+
+      vortex_page:delete("http://diegorubin.com/"),
+      ?assertEqual(Page, Result)
+    end}].
+

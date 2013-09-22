@@ -8,7 +8,7 @@
 -author('Diego Rubin <rubin.diego@gmail.com>').
 
 %% Riak exports
--export([connect/0, connect/1, create/3, create/4, fetch/3, update/2, get_value/1, save/2]).
+-export([connect/0, connect/1, create/3, create/4, fetch/3, update/2, get_value/1, save/2, new_key/1, delete/3]).
 
 % Exported Functions
 %% @spec connect(connection_info()) -> pid()
@@ -58,6 +58,12 @@ update(RiakObj, NewValue) ->
   NewRiakObj = riakc_obj:update_value(RiakObj, NewValue),
   NewRiakObj.
 
+%% @spec delete(pid(), binary, binary) -> term()
+%% @doc Destroy item of bucket
+delete(RiakPid, Bucket, Key) ->
+  Value = riakc_pb_socket:delete(RiakPid, Bucket, Key),
+  Value.
+
 %% @spec get_value(riakc_obj()) -> term()
 %% @doc Retrieves the stored value from within the riakc
 %%      object.
@@ -70,4 +76,12 @@ get_value(RiakObj) ->
 save(RiakPid, RiakObj) ->
   Result = riakc_pb_socket:put(RiakPid, RiakObj),
   Result.
+
+%% @spec new_key(list()) -> key()
+%% @doc Generate an close-to-unique key that can be used to identify
+%%      an object in riak using the given list parameter as the stuff
+%%      to hash.
+new_key(List) ->
+  Hash = erlang:phash2(List),
+  base64:encode(<<Hash:32>>).
 

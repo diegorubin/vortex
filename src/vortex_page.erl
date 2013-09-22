@@ -1,5 +1,5 @@
 -module(vortex_page).
--export([to_page/3, to_json/1, from_json/1, save/2, fetch/2]).
+-export([to_page/3, to_json/1, from_json/1, save/2, fetch/1, delete/1]).
 
 -define(BUCKET, <<"pages">>).
 
@@ -23,15 +23,17 @@ to_json({page, PageData}) ->
 from_json(PageJson) ->
   from_json_internal(PageJson).
 
-fetch(RiakPid, Key) ->
+fetch(Key) ->
+  RiakPid = vortex_riak:connect(),
   {ok, RiakObj} = vortex_riak:fetch(RiakPid, ?BUCKET, Key),
   PageJson = vortex_riak:get_value(RiakObj),
   from_json_internal(PageJson).
 
-save(RiakPid, Page={page, PageData}) ->
+save(Page={page, PageData}, Url) ->
+  RiakPid = vortex_riak:connect(),
+  Key = vortex_riak:new_key(Url),
   case proplists:get_value(key, PageData, undefined) of
     undefined ->
-      Key = vortex_riak:new_key(),
       NewPageData = [{key, Key} | PageData],
       RiakObj = vortex_riak:create(?BUCKET, Key, to_json_internal(NewPageData)),
       ok = vortex_riak:save(RiakPid, RiakObj),
@@ -42,6 +44,12 @@ save(RiakPid, Page={page, PageData}) ->
       ok = vortex_riak:save(RiakPid, NewRiakObj),
       Page
   end.
+
+delete(Url) ->
+  Key = vortex_riak:new_key(Url),
+  RiakPid = vortex_riak:connect(),
+  vortex_riak:delete(RiakPid, ?BUCKET, Key).
+
 
 to_json_internal(PageData) ->
   vortex_json:to_json(PageData, fun is_string/1).
