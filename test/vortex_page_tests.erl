@@ -22,9 +22,9 @@ save_test_() ->
     fun() -> 
       {page, PageData} = vortex_page:to_page("http://diegorubin.com",
                                    "Pagina Pessoal", "<html></html>"),
-      Page = {page, [{key, vortex_riak:url_to_key("http://diegorubin.com/")} | PageData]},
-      Result = vortex_page:save({page, PageData}, "http://diegorubin.com/"),
-      vortex_page:delete("http://diegorubin.com/"),
+      Page = {page, [{key, vortex_page:url_to_key("http://diegorubin.com/about/diegorubin")} | PageData]},
+      Result = vortex_page:save({page, PageData}, "http://diegorubin.com/about/diegorubin"),
+      vortex_page:delete("http://diegorubin.com/about/diegorubin"),
       ?assertEqual(Page, Result)
     end}].
 

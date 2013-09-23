@@ -23,8 +23,9 @@ to_json({page, PageData}) ->
 from_json(PageJson) ->
   from_json_internal(PageJson).
 
-fetch(Key) ->
+fetch(Url) ->
   RiakPid = vortex_riak:connect(),
+  Key = url_to_key(Url),
   case vortex_riak:fetch(RiakPid, ?BUCKET, Key) of
   {ok, RiakObj} -> 
     PageJson = vortex_riak:get_value(RiakObj),
@@ -36,7 +37,7 @@ fetch(Key) ->
 save(Page={page, PageData}, Url) ->
   RiakPid = vortex_riak:connect(),
   Key = url_to_key(Url),
-  case fetch(Key) of
+  case fetch(Url) of
     notfound ->
       NewPageData = [{key, Key} | PageData],
       RiakObj = vortex_riak:create(?BUCKET, Key, to_json_internal(NewPageData)),
