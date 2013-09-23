@@ -1,5 +1,5 @@
 -module(vortex_page).
--export([to_page/3, to_json/1, from_json/1, save/2, fetch/1, delete/1]).
+-export([to_page/3, to_json/1, from_json/1, save/2, fetch/1, delete/1, url_to_key/1]).
 
 -define(BUCKET, <<"pages">>).
 
@@ -25,28 +25,32 @@ from_json(PageJson) ->
 
 fetch(Key) ->
   RiakPid = vortex_riak:connect(),
-  {ok, RiakObj} = vortex_riak:fetch(RiakPid, ?BUCKET, Key),
-  PageJson = vortex_riak:get_value(RiakObj),
-  from_json_internal(PageJson).
+  case vortex_riak:fetch(RiakPid, ?BUCKET, Key) of
+  {ok, RiakObj} -> 
+    PageJson = vortex_riak:get_value(RiakObj),
+    from_json_internal(PageJson);
+  {error, notfound} ->
+      notfound
+  end.
 
 save(Page={page, PageData}, Url) ->
   RiakPid = vortex_riak:connect(),
-  Key = vortex_riak:new_key(Url),
-  case proplists:get_value(key, PageData, undefined) of
-    undefined ->
+  Key = url_to_key(Url),
+  case fetch(Key) of
+    notfound ->
       NewPageData = [{key, Key} | PageData],
       RiakObj = vortex_riak:create(?BUCKET, Key, to_json_internal(NewPageData)),
       ok = vortex_riak:save(RiakPid, RiakObj),
       {page, NewPageData};
-    ExistingKey ->
-      RiakObj = vortex_riak:fetch(RiakPid, ?BUCKET, ExistingKey),
+    {page, _} ->
+      RiakObj = vortex_riak:fetch(RiakPid, ?BUCKET, Key),
       NewRiakObj = vortex_riak:update(RiakObj, to_json_internal(PageData)),
       ok = vortex_riak:save(RiakPid, NewRiakObj),
       Page
   end.
 
 delete(Url) ->
-  Key = vortex_riak:new_key(Url),
+  Key = url_to_key(Url),
   RiakPid = vortex_riak:connect(),
   vortex_riak:delete(RiakPid, ?BUCKET, Key).
 
@@ -62,4 +66,12 @@ is_string(title) -> true;
 is_string(body) -> true;
 is_string(readat) -> true;
 is_string(_) -> false.
+
+%% @spec url_to_key(list()) -> key()
+%% @doc Generate an close-to-unique key that can be used to identify
+%%      an object in riak using the given list parameter as the stuff
+%%      to hash.
+url_to_key(List) ->
+  Hash = erlang:phash2(List),
+  base64:encode(<<Hash:32>>).
 
