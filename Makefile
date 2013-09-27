@@ -1,7 +1,7 @@
 ERL ?= erl
 APP := vortex
 
-ERLFLAGS= -pa $(CURDIR)/.eunit -pa $(CURDIR)/ebin -pa $(CURDIR)/deps/*/ebin
+ERLFLAGS= -pa $(CURDIR)/.eunit -pa $(CURDIR)/ebin -pa $(CURDIR)/deps/*/ebin +pc unicode
 
 REBAR="./rebar"
 ifeq ($(REBAR),)

@@ -1,5 +1,5 @@
 -module(vortex_page).
--export([to_page/3, to_json/1, from_json/1, save/2, fetch/1, delete/1, url_to_key/1]).
+-export([to_page/3, save/2, fetch/1, delete/1, url_to_key/1]).
 
 -define(BUCKET, <<"pages">>).
 
@@ -16,12 +16,6 @@ to_page(Domain, Title, Body) ->
       {readat, ReadAt}
     ]
   }.
-
-to_json({page, PageData}) ->
-  to_json_internal(PageData).
-
-from_json(PageJson) ->
-  from_json_internal(PageJson).
 
 fetch(Url) ->
   RiakPid = vortex_riak:connect(),
@@ -55,12 +49,11 @@ delete(Url) ->
   RiakPid = vortex_riak:connect(),
   vortex_riak:delete(RiakPid, ?BUCKET, Key).
 
-
 to_json_internal(PageData) ->
-  vortex_json:to_json(PageData, fun is_string/1).
+  unicode:characters_to_binary(vortex_json:to_json(PageData, fun is_string/1)).
 
 from_json_internal(PageJson) ->
-  {page, vortex_json:from_json(PageJson, fun is_string/1)}.
+  {page, vortex_json:from_json(unicode:characters_to_binary(PageJson), fun is_string/1)}.
 
 is_string(domain) -> true;
 is_string(title) -> true;

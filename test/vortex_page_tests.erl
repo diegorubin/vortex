@@ -32,7 +32,7 @@ update_test_() ->
   [{"update page struct",
     fun() -> 
       {page, PageData} = vortex_page:to_page("http://diegorubin.com",
-                                   "Pagina Pessoal", "<html></html>"),
+                                   "Página Pessoal", "<html></html>"),
 
       vortex_page:save({page, PageData}, "http://diegorubin.com/"),
 
