@@ -38,7 +38,7 @@ update_test_() ->
 
       {page, NewPageData} = vortex_page:to_page("http://diegorubin.com",
                                    "Minha", "<html></html>"),
-      Page = {page, [{key, vortex_riak:url_to_key("http://diegorubin.com/")} | NewPageData]},
+      Page = {page, [{key, vortex_page:url_to_key("http://diegorubin.com/")} | NewPageData]},
       Result = vortex_page:save(Page, "http://diegorubin.com/"),
 
       vortex_page:delete("http://diegorubin.com/"),

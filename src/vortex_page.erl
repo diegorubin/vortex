@@ -38,7 +38,7 @@ save(Page={page, PageData}, Url) ->
       ok = vortex_riak:save(RiakPid, RiakObj),
       {page, NewPageData};
     {page, _} ->
-      RiakObj = vortex_riak:fetch(RiakPid, ?BUCKET, Key),
+      {ok, RiakObj} = vortex_riak:fetch(RiakPid, ?BUCKET, Key),
       NewRiakObj = vortex_riak:update(RiakObj, to_json_internal(PageData)),
       ok = vortex_riak:save(RiakPid, NewRiakObj),
       Page
