@@ -8,7 +8,11 @@
   {applications, [
                   kernel,
                   stdlib,
-                  riakc
+                  riakc,
+                  inets,
+                  crypto,
+                  mochiweb,
+                  webmachine
                  ]},
   {mod, { vortex_app, []}},
   {env, []}

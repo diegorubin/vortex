@@ -2,9 +2,10 @@
              [{description,"vortex"},
               {vsn,"1"},
               {modules,[vortex,vortex_app,vortex_extractdata,vortex_json,
-                        vortex_page,vortex_riak,vortex_riak_config,
-                        vortex_sup]},
+                        vortex_page,vortex_resource,vortex_riak,
+                        vortex_riak_config,vortex_sup]},
               {registered,[]},
-              {applications,[kernel,stdlib,riakc]},
+              {applications,[kernel,stdlib,riakc,inets,crypto,mochiweb,
+                             webmachine]},
               {mod,{vortex_app,[]}},
               {env,[]}]}.
