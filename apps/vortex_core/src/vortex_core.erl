@@ -30,7 +30,7 @@ start() ->
   application:start(riak_pb),
   application:start(riakc),
   ensure_started(inets),
-    ensure_started(crypto),
+  ensure_started(crypto),
   ensure_started(mochiweb),
   application:start(vortex_core).
 
