@@ -1,5 +1,5 @@
 -module(vortex_core_page).
--export([to_page/3, save/2, fetch/1, delete/1, url_to_key/1]).
+-export([to_page/3, all/0, save/2, fetch/1, delete/1, url_to_key/1]).
 
 -define(BUCKET, <<"pages">>).
 
@@ -17,9 +17,12 @@ to_page(Domain, Title, Body) ->
     ]
   }.
 
-fetch(Url) ->
+all() ->
   RiakPid = vortex_core_riak:connect(),
-  Key = url_to_key(Url),
+  Keys = vortex_core_riak:keys(RiakPid, ?BUCKET),
+  [find(RiakPid, Key) || Key <- Keys].
+
+find(RiakPid, Key) -> 
   case vortex_core_riak:fetch(RiakPid, ?BUCKET, Key) of
   {ok, RiakObj} -> 
     PageJson = vortex_core_riak:get_value(RiakObj),
@@ -27,6 +30,11 @@ fetch(Url) ->
   {error, notfound} ->
       notfound
   end.
+
+fetch(Url) ->
+  RiakPid = vortex_core_riak:connect(),
+  Key = url_to_key(Url),
+  find(RiakPid, Key).
 
 save(Page={page, PageData}, Url) ->
   RiakPid = vortex_core_riak:connect(),
