@@ -1,0 +1,18 @@
+%%-*- mode: erlang -*-
+{application, vortex_core,
+ [
+  {description, "vortex_core"},
+  {vsn, "1"},
+  {modules, []},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  riakc,
+                  inets,
+                  crypto,
+                  mochiweb
+                 ]},
+  {mod, { vortex_core_app, []}},
+  {env, []}
+ ]}.

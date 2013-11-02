@@ -1,0 +1,11 @@
+{application,vortex_core,
+             [{description,"vortex_core"},
+              {vsn,"1"},
+              {modules,[vortex_core,vortex_core_app,vortex_core_extractdata,
+                        vortex_core_json,vortex_core_page,vortex_core_riak,
+                        vortex_core_riak_config,vortex_core_sup,
+                        vortex_core_utils]},
+              {registered,[]},
+              {applications,[kernel,stdlib,riakc,inets,crypto,mochiweb]},
+              {mod,{vortex_core_app,[]}},
+              {env,[]}]}.

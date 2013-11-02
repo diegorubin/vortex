@@ -1,0 +1,20 @@
+%%-*- mode: erlang -*-
+{application, vortex_web,
+  [
+    {description, "Interface web para o indexador Vortex"},
+    {vsn, "0.0.1"},
+    {modules, []},
+    {registered, []},
+    {applications,
+      [
+        kernel,
+        stdlib,
+        inets,
+        crypto,
+        mochiweb,
+        webmachine
+      ]
+    },
+    {mod, {vortex_web_app, []}},
+    {env, []}
+  ]}.
