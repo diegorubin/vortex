@@ -26,13 +26,13 @@ start_link() ->
 %% @spec start() -> ok
 %% @doc Start the vortex_core server.
 start() ->
-  application:start(protobuffs),
-  application:start(riak_pb),
-  application:start(riakc),
+  ensure_started(protobuffs),
+  ensure_started(riak_pb),
+  ensure_started(riakc),
   ensure_started(inets),
   ensure_started(crypto),
   ensure_started(mochiweb),
-  application:start(vortex_core).
+  ensure_started(vortex_core).
 
 %% @spec stop() -> ok
 %% @doc Stop the vortex_core server.
@@ -44,3 +44,4 @@ stop() ->
   application:stop(mochiweb),
   application:stop(inets),
   Res.
+
