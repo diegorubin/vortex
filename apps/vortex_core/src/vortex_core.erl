@@ -32,7 +32,7 @@ start() ->
   ensure_started(inets),
   ensure_started(crypto),
   ensure_started(mochiweb),
-  ensure_started(vortex_core).
+  application:start(vortex_core).
 
 %% @spec stop() -> ok
 %% @doc Stop the vortex_core server.

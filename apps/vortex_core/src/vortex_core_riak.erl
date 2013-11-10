@@ -8,7 +8,7 @@
 -author('Diego Rubin <rubin.diego@gmail.com>').
 
 %% Riak exports
--export([connect/0, connect/1, create/3, create/4, keys/2, fetch/3, update/2, get_value/1, save/2, delete/3]).
+-export([connect/0, connect/1, create/3, create/4, fetch/3, update/2, get_value/1, save/2, delete/3]).
 
 % Exported Functions
 %% @spec connect(connection_info()) -> pid()
@@ -50,13 +50,6 @@ create(Bucket, Key, Item, MimeType) ->
 fetch(RiakPid, Bucket, Key) ->
   RiakObj = riakc_pb_socket:get(RiakPid, Bucket, Key),
   RiakObj.
-
-%% @spec keys(pid(), binary) -> list
-%% @doc Fetches keys from a Riak bucket
-%%      using the connection given.
-keys(RiakPid, Bucket) ->
-  List = riakc_pb_socket:list_keys(RiakPid, Bucket),
-  List.
 
 %% @spec update(riakc_obj(), term()) -> riakc_obj()
 %% @doc Updates the stored value for a riakc object with
