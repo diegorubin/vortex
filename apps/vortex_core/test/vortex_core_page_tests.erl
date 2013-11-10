@@ -45,3 +45,19 @@ update_test_() ->
       ?assertEqual(Page, Result)
     end}].
 
+save_and_list_test_() ->
+  [{"save page and get list index",
+    fun() -> 
+      vortex_core_domainpages:clear_index("diegorubin.com"),
+
+      {page, PageData} = vortex_core_page:to_page("http://diegorubin.com",
+                                   "Pagina Pessoal", "<html></html>"),
+      vortex_core_page:save({page, PageData}, "http://diegorubin.com/about/diegorubin"),
+
+      Result = vortex_core_domainpages:fetch("diegorubin.com"),
+
+      vortex_core_page:delete("http://diegorubin.com/about/diegorubin"),
+
+      ?assertEqual(["http://diegorubin.com/about/diegorubin"], Result)
+    end}].
+

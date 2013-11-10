@@ -44,6 +44,9 @@ save(Page={page, PageData}, Url) ->
       NewPageData = [{key, Key} | PageData],
       RiakObj = vortex_core_riak:create(?BUCKET, Key, to_json_internal(NewPageData)),
       ok = vortex_core_riak:save(RiakPid, RiakObj),
+
+      vortex_core_domainpages:add_page_in_domain_list(Url),
+
       {page, NewPageData};
     {page, _} ->
       {ok, RiakObj} = vortex_core_riak:fetch(RiakPid, ?BUCKET, Key),

@@ -6,9 +6,19 @@
 -module(vortex_core_domainpages).
 -author('Diego Rubin <rubin.diego@gmail.com>').
 
--export([add_page_in_domain_list/2, fetch/1, clear_index/1]).
+-export([add_page_in_domain_list/1, add_page_in_domain_list/2, fetch/1, clear_index/1]).
 
 -define(BUCKET, <<"domainpages">>).
+
+add_page_in_domain_list(Url) ->
+  Result = re:run(Url, "^https?://([0-9a-zA-Z-.]+)/?",[{capture,[1],list}]),
+
+  case Result of
+    {match, [Domain]} ->
+      add_page_in_domain_list(Domain, Url);
+    _Else ->
+      add_page_in_domain_list(Url, Url)
+  end.
 
 add_page_in_domain_list(Domain, Page) ->
   RiakPid = vortex_core_riak:connect(),
