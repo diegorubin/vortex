@@ -60,7 +60,6 @@ put_on_list_if_not_have(List, Elem) ->
   end.
   
 
-
 %% private functions
 find_value(Key, List) ->
   find_value(Key, List, 0).

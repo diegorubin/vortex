@@ -48,13 +48,13 @@ update_test_() ->
 save_and_list_test_() ->
   [{"save page and get list index",
     fun() -> 
-      vortex_core_domainpages:clear_index("diegorubin.com"),
+      vortex_core_indexes:clear_index("diegorubin.com"),
 
       {page, PageData} = vortex_core_page:to_page("http://diegorubin.com",
                                    "Pagina Pessoal", "<html></html>"),
       vortex_core_page:save({page, PageData}, "http://diegorubin.com/about/diegorubin"),
 
-      Result = vortex_core_domainpages:fetch("diegorubin.com"),
+      Result = vortex_core_indexes:fetch("diegorubin.com"),
 
       vortex_core_page:delete("http://diegorubin.com/about/diegorubin"),
 
@@ -64,13 +64,14 @@ save_and_list_test_() ->
 save_and_list_domains_test_() ->
   [{"save page and get list of domains",
     fun() -> 
-      vortex_core_domainpages:clear_index("diegorubin.com"),
+      vortex_core_indexes:clear_index("diegorubin.com"),
+      vortex_core_indexes:clear_index(<<"domains">>, <<"vortexdomainlist">>),
 
       {page, PageData} = vortex_core_page:to_page("http://diegorubin.com",
                                    "Pagina Pessoal", "<html></html>"),
       vortex_core_page:save({page, PageData}, "http://diegorubin.com/about/diegorubin"),
 
-      Result = vortex_core_domainpages:fetch(<<"domains">>, <<"vortexdomainlist">>),
+      Result = vortex_core_indexes:fetch(<<"domains">>, <<"vortexdomainlist">>),
 
       vortex_core_page:delete("http://diegorubin.com/about/diegorubin"),
 

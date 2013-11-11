@@ -1,12 +1,12 @@
 %% @author Diego Rubin <rubin.diego@gmail.com>
 %% @copyright 2013 Diego Rubin.
 
-%% @doc vortex_core_domainpages startup code
+%% @doc vortex_core_indexes startup code
 
--module(vortex_core_domainpages).
+-module(vortex_core_indexes).
 -author('Diego Rubin <rubin.diego@gmail.com>').
 
--export([add_page_in_domain_list/1, add_page_in_domain_list/2, fetch/1, fetch/2, clear_index/1]).
+-export([add_page_in_domain_list/1, add_page_in_domain_list/2, fetch/1, fetch/2, clear_index/1, clear_index/2]).
 
 -define(PAGESLIST, <<"domainpages">>).
 -define(DOMAINS, <<"domains">>).
@@ -69,13 +69,16 @@ fetch(Bucket, Key) ->
   end.
 
 clear_index(Domain) ->
+  clear_index(?PAGESLIST, Domain).
+
+clear_index(Bucket, Key) ->
   RiakPid = vortex_core_riak:connect(),
-  case fetch(Domain) of
+  case fetch(Bucket, Key) of
     notfound ->
-      RiakObj = vortex_core_riak:create(?PAGESLIST, Domain, []),
+      RiakObj = vortex_core_riak:create(Bucket, Key, []),
       vortex_core_riak:save(RiakPid, RiakObj);
     _ ->
-      {ok, RiakObj} = vortex_core_riak:fetch(RiakPid, ?PAGESLIST, Domain),
+      {ok, RiakObj} = vortex_core_riak:fetch(RiakPid, Bucket, Key),
       NewRiakObj = vortex_core_riak:update(RiakObj, []),
       vortex_core_riak:save(RiakPid, NewRiakObj)
   end.

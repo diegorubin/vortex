@@ -19,7 +19,7 @@ to_page(Domain, Title, Body) ->
 
 all_of_domain(Domain) ->
   RiakPid = vortex_core_riak:connect(),
-  Urls = vortex_core_domainpages:fetch(Domain),
+  Urls = vortex_core_indexes:fetch(Domain),
   [find(RiakPid, url_to_key(Url)) || Url <- Urls].
 
 find(RiakPid, Key) -> 
@@ -45,7 +45,7 @@ save(Page={page, PageData}, Url) ->
       RiakObj = vortex_core_riak:create(?BUCKET, Key, to_json_internal(NewPageData)),
       ok = vortex_core_riak:save(RiakPid, RiakObj),
 
-      vortex_core_domainpages:add_page_in_domain_list(Url),
+      vortex_core_indexes:add_page_in_domain_list(Url),
 
       {page, NewPageData};
     {page, _} ->
