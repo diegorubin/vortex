@@ -15,14 +15,19 @@ content_types_provided(ReqData, State) ->
   {Types, ReqData, State}.
 
 to_json(ReqData, State) ->
-%  Pages = vortex_core_page:all(),
-%  Content = [vortex_core_json:to_json(Page) || Page <- Pages],
+  PathInfo = wrq:path_info(ReqData),
+  [{domain, Domain}] = PathInfo,
 
-%  Json = iolist_to_binary([
-%    "{\"pages\":", 
-%    iolist_to_binary(Content), 
-%    "}"
-%  ]),
+  io:format("~s", [Domain]),
 
-  {"{}", ReqData, State}.
+  Pages = vortex_core_page:all_of_domain(Domain),
+  Content = [vortex_core_json:to_json(Page) || Page <- Pages],
+
+  Json = iolist_to_binary([
+    "{\"pages\": [\"", 
+     string:join(Content, "\", \""), 
+    "\"]}"
+  ]),
+
+  {Json, ReqData, State}.
 

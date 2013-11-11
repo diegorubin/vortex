@@ -20,7 +20,8 @@ to_page(Domain, Title, Body) ->
 all_of_domain(Domain) ->
   RiakPid = vortex_core_riak:connect(),
   Urls = vortex_core_indexes:fetch(Domain),
-  [find(RiakPid, url_to_key(Url)) || Url <- Urls].
+  Pages = [find(RiakPid, url_to_key(Url)) || Url <- Urls],
+  lists:delete(notfound, Pages).
 
 find(RiakPid, Key) -> 
   case vortex_core_riak:fetch(RiakPid, ?BUCKET, Key) of
