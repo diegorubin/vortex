@@ -5,7 +5,7 @@
 -module(vortex_core_utils).
 -author('Diego Rubin <rubin.diego@gmail.com>').
 
--export([remove_accent/1, find_value/2]).
+-export([remove_accent/1, find_value/2, in_list/3, in_list/2, put_on_list_if_not_have/2]).
 
 remove_accent("") -> "";
 remove_accent(String) ->
@@ -16,7 +16,6 @@ remove_accent([], String) ->
 
 remove_accent(Rest, String) ->
   [C|NewRest] = Rest,
-
 
   ValueA = find_value(C, [$ã, $á, $à]),
   ValueAA = find_value(C, [$Ã, $Á, $À]),
@@ -41,6 +40,26 @@ remove_accent(Rest, String) ->
      is_number(ValueUU) -> remove_accent(NewRest, [$U|String]);
      true -> remove_accent(NewRest, [C|String])
   end.
+
+in_list([], _) ->
+  false;
+in_list(List, Item) ->
+  [Head | Tail] = List,
+  in_list(Head, Tail, Item).
+
+in_list(Elem, _, Item) when Elem == Item -> true;
+in_list(_, [], _Item) -> false;
+in_list(_, Rest, Item) ->
+  [Head | Tail] = Rest,
+  in_list(Head, Tail, Item).
+
+put_on_list_if_not_have(List, Elem) ->
+  case in_list(List, Elem) of
+  true -> List;
+  false -> [Elem | List]
+  end.
+  
+
 
 %% private functions
 find_value(Key, List) ->

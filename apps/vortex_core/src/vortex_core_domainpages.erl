@@ -6,9 +6,27 @@
 -module(vortex_core_domainpages).
 -author('Diego Rubin <rubin.diego@gmail.com>').
 
--export([add_page_in_domain_list/1, add_page_in_domain_list/2, fetch/1, clear_index/1]).
+-export([add_page_in_domain_list/1, add_page_in_domain_list/2, fetch/1, fetch/2, clear_index/1]).
 
--define(BUCKET, <<"domainpages">>).
+-define(PAGESLIST, <<"domainpages">>).
+-define(DOMAINS, <<"domains">>).
+-define(DOMAINLIST, <<"vortexdomainlist">>).
+
+add_domain_in_list(Domain) -> 
+  RiakPid = vortex_core_riak:connect(),
+
+  case fetch(?DOMAINS, ?DOMAINLIST) of
+    notfound ->
+      RiakObj = vortex_core_riak:create(?DOMAINS, ?DOMAINLIST, [Domain]),
+      ok = vortex_core_riak:save(RiakPid, RiakObj),
+      [Domain];
+    List ->
+      {ok, RiakObj} = vortex_core_riak:fetch(RiakPid, ?DOMAINS, ?DOMAINLIST),
+      NewList = [Domain | List],
+      NewRiakObj = vortex_core_riak:update(RiakObj, NewList),
+      ok = vortex_core_riak:save(RiakPid, NewRiakObj),
+      NewList
+  end.
 
 add_page_in_domain_list(Url) ->
   Result = re:run(Url, "^https?://([0-9a-zA-Z-.]+)/?",[{capture,[1],list}]),
@@ -22,13 +40,16 @@ add_page_in_domain_list(Url) ->
 
 add_page_in_domain_list(Domain, Page) ->
   RiakPid = vortex_core_riak:connect(),
+
+  add_domain_in_list(Domain),
+
   case fetch(Domain) of
     notfound ->
-      RiakObj = vortex_core_riak:create(?BUCKET, Domain, [Page]),
+      RiakObj = vortex_core_riak:create(?PAGESLIST, Domain, [Page]),
       ok = vortex_core_riak:save(RiakPid, RiakObj),
       [Page];
     List ->
-      {ok, RiakObj} = vortex_core_riak:fetch(RiakPid, ?BUCKET, Domain),
+      {ok, RiakObj} = vortex_core_riak:fetch(RiakPid, ?PAGESLIST, Domain),
       NewList = [Page | List],
       NewRiakObj = vortex_core_riak:update(RiakObj, NewList),
       ok = vortex_core_riak:save(RiakPid, NewRiakObj),
@@ -36,8 +57,11 @@ add_page_in_domain_list(Domain, Page) ->
   end.
 
 fetch(Domain) ->
+  fetch(?PAGESLIST, Domain).
+
+fetch(Bucket, Key) ->
   RiakPid = vortex_core_riak:connect(),
-  case vortex_core_riak:fetch(RiakPid, ?BUCKET, Domain) of
+  case vortex_core_riak:fetch(RiakPid, Bucket, Key) of
   {ok, RiakObj} -> 
     binary_to_term(vortex_core_riak:get_value(RiakObj));
   {error, notfound} ->
@@ -48,10 +72,10 @@ clear_index(Domain) ->
   RiakPid = vortex_core_riak:connect(),
   case fetch(Domain) of
     notfound ->
-      RiakObj = vortex_core_riak:create(?BUCKET, Domain, []),
+      RiakObj = vortex_core_riak:create(?PAGESLIST, Domain, []),
       vortex_core_riak:save(RiakPid, RiakObj);
     _ ->
-      {ok, RiakObj} = vortex_core_riak:fetch(RiakPid, ?BUCKET, Domain),
+      {ok, RiakObj} = vortex_core_riak:fetch(RiakPid, ?PAGESLIST, Domain),
       NewRiakObj = vortex_core_riak:update(RiakObj, []),
       vortex_core_riak:save(RiakPid, NewRiakObj)
   end.
