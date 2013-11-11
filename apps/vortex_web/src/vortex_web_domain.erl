@@ -15,12 +15,14 @@ content_types_provided(ReqData, State) ->
   {Types, ReqData, State}.
 
 to_json(ReqData, State) ->
-  Content = vortex_core_indexes:fetch_domains(),
+  Domains = vortex_core_indexes:fetch_domains(),
+
+  Content = [string:join(["{\"domain\": {\"name\": \"", Domain, "\", \"total\" : ", vortex_core_utils:int_to_string(vortex_core_indexes:total_pages(Domain))  , "}}"], "") || Domain <- Domains],
 
   Json = iolist_to_binary([
-    "{\"domains\": [\"", 
-     string:join(Content, "\", \""), 
-    "\"]}"
+    "{\"domains\": [", 
+     string:join(Content, ", "), 
+    "]}"
   ]),
 
   {Json, ReqData, State}.

@@ -18,15 +18,13 @@ to_json(ReqData, State) ->
   PathInfo = wrq:path_info(ReqData),
   [{domain, Domain}] = PathInfo,
 
-  io:format("~s", [Domain]),
-
   Pages = vortex_core_page:all_of_domain(Domain),
   Content = [vortex_core_json:to_json(Page) || Page <- Pages],
 
   Json = iolist_to_binary([
-    "{\"pages\": [\"", 
+    "{\"pages\": [", 
      string:join(Content, "\", \""), 
-    "\"]}"
+    "]}"
   ]),
 
   {Json, ReqData, State}.

@@ -6,7 +6,7 @@
 -module(vortex_core_indexes).
 -author('Diego Rubin <rubin.diego@gmail.com>').
 
--export([add_page_in_domain_list/1, add_page_in_domain_list/2, fetch/1, fetch/2, clear_index/1, clear_index/2, fetch_domains/0]).
+-export([add_page_in_domain_list/1, add_page_in_domain_list/2, fetch/1, fetch/2, clear_index/1, clear_index/2, fetch_domains/0, total_pages/1]).
 
 -define(PAGESLIST, <<"domainpages">>).
 -define(DOMAINS, <<"domains">>).
@@ -71,6 +71,9 @@ fetch(Bucket, Key) ->
       notfound
   end.
 
+total_pages(Domain) ->
+  vortex_core_utils:list_len(fetch(Domain)).
+  
 clear_index(Domain) ->
   clear_index(?PAGESLIST, Domain).
 

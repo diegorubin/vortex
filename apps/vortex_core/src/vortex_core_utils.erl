@@ -5,7 +5,7 @@
 -module(vortex_core_utils).
 -author('Diego Rubin <rubin.diego@gmail.com>').
 
--export([remove_accent/1, find_value/2, in_list/3, in_list/2, put_on_list_if_not_have/2]).
+-export([remove_accent/1, find_value/2, in_list/3, in_list/2, put_on_list_if_not_have/2, list_len/1, int_to_string/1]).
 
 remove_accent("") -> "";
 remove_accent(String) ->
@@ -59,6 +59,17 @@ put_on_list_if_not_have(List, Elem) ->
   false -> [Elem | List]
   end.
   
+int_to_string(Int) ->
+  lists:flatten(io_lib:format("~p", [Int])).
+
+list_len(List) ->
+  list_len(0, List).
+
+list_len(Total, []) ->
+  Total;
+list_len(Total, List) ->
+  [_|Rest] = List,
+  list_len(Total + 1, Rest).
 
 %% private functions
 find_value(Key, List) ->
