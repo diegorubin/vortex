@@ -6,7 +6,7 @@
 -module(vortex_core_indexes).
 -author('Diego Rubin <rubin.diego@gmail.com>').
 
--export([add_page_in_domain_list/1, add_page_in_domain_list/2, fetch/1, fetch/2, clear_index/1, clear_index/2]).
+-export([add_page_in_domain_list/1, add_page_in_domain_list/2, fetch/1, fetch/2, clear_index/1, clear_index/2, fetch_domains/0]).
 
 -define(PAGESLIST, <<"domainpages">>).
 -define(DOMAINS, <<"domains">>).
@@ -22,7 +22,7 @@ add_domain_in_list(Domain) ->
       [Domain];
     List ->
       {ok, RiakObj} = vortex_core_riak:fetch(RiakPid, ?DOMAINS, ?DOMAINLIST),
-      NewList = [Domain | List],
+      NewList = vortex_core_utils:put_on_list_if_not_have(List, Domain),
       NewRiakObj = vortex_core_riak:update(RiakObj, NewList),
       ok = vortex_core_riak:save(RiakPid, NewRiakObj),
       NewList
@@ -50,11 +50,14 @@ add_page_in_domain_list(Domain, Page) ->
       [Page];
     List ->
       {ok, RiakObj} = vortex_core_riak:fetch(RiakPid, ?PAGESLIST, Domain),
-      NewList = [Page | List],
+      NewList = vortex_core_utils:put_on_list_if_not_have(List, Page),
       NewRiakObj = vortex_core_riak:update(RiakObj, NewList),
       ok = vortex_core_riak:save(RiakPid, NewRiakObj),
       NewList
   end.
+
+fetch_domains() -> 
+  fetch(?DOMAINS, ?DOMAINLIST).
 
 fetch(Domain) ->
   fetch(?PAGESLIST, Domain).

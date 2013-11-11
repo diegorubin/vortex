@@ -71,7 +71,7 @@ save_and_list_domains_test_() ->
                                    "Pagina Pessoal", "<html></html>"),
       vortex_core_page:save({page, PageData}, "http://diegorubin.com/about/diegorubin"),
 
-      Result = vortex_core_indexes:fetch(<<"domains">>, <<"vortexdomainlist">>),
+      Result = vortex_core_indexes:fetch_domains(),
 
       vortex_core_page:delete("http://diegorubin.com/about/diegorubin"),
 
