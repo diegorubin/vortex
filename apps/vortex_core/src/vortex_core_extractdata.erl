@@ -19,7 +19,8 @@ start_link() ->
   gen_server:start_link(?MODULE, [], []).
 
 handle_cast(Uri, State) ->
-  getlinks(Uri),
+  Links = getlinks(Uri),
+  [watch(Link) || Link <- Links], 
   {stop, normal, State}.
 
 handle_info(timeout, State) -> {stop, normal, State}.
@@ -29,6 +30,11 @@ handle_call(_Arg, _Reason, _State) -> ok.
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 terminate(_Reason, _State) -> ok.
+
+% watch
+watch(Uri) ->
+  {ok, Pid} = supervisor:start_child(vortex_core_sup, []),
+  gen_server:cast(Pid, Uri).
 
 % - getlinks
 getlinks(Uri) -> getlinks(Uri, []).

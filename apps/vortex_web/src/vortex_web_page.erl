@@ -23,7 +23,7 @@ to_json(ReqData, State) ->
 
   Json = iolist_to_binary([
     "{\"pages\": [", 
-     string:join(Content, "\", \""), 
+     string:join(Content, ", "), 
     "]}"
   ]),
 
