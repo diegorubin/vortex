@@ -7,7 +7,7 @@
 -export([init/1, start_link/0, handle_cast/2]).
 
 % not implemented
--export([terminate/2, handle_call/3, code_change/3, handle_info/2]).
+-export([terminate/2, handle_call/3, code_change/3, handle_info/2, watch/1]).
 
 -define(REDOMAIN, "^https?://([0-9a-zA-Z-.]+)/?").
 
@@ -20,7 +20,7 @@ start_link() ->
 
 handle_cast(Uri, State) ->
   Links = getlinks(Uri),
-  [watch(Link) || Link <- Links], 
+  [watch(Link) || [Link] <- Links], 
   {stop, normal, State}.
 
 handle_info(timeout, State) -> {stop, normal, State}.
@@ -45,18 +45,11 @@ getlinks(Uri, Domains) ->
 
 % - getpage
 getpage(Uri) ->
-  inets:start(),
-
-  KeyInet = list_to_atom(lists:flatten(io_lib:format("atom~p", [erlang:phash2(Uri)]))),
-
-  {ok, Pid} = inets:start(httpc, [{profile, KeyInet}]),
 
   {ok, {{_Version, StatusCode, _ReasonPhrase}, Headers, Content}} =
     httpc:request(get, {Uri, []}, [], []),
 
   [ContentType|_] = [CT || {"content-type", CT} <- Headers],
-
-  inets:stop(httpc, Pid),
 
   {ok, 
     {
@@ -68,55 +61,60 @@ getpage(Uri) ->
 
 % - getrawlinks
 getrawlinks(Uri) ->
-  {ok, 
-    {
-      {statuscode, _StatusCode},
-      {contenttype, _ContentType},
-      {content, RawPage}
-    }
-  } = getpage(Uri),
 
-  Page = vortex_core_utils:force_string_list(RawPage),
+  case getpage(Uri) of
+    {ok, 
+      {
+        {statuscode, _StatusCode},
+        {contenttype, _ContentType},
+        {content, RawPage}
+      }
+    } ->
 
-  case vortex_core_page:fetch(Uri) of
-    notfound ->
+      Page = vortex_core_utils:force_string_list(RawPage),
 
-      ResultTitle = re:run(Page, "<title.*?>(.*?)</title>", [notbol, {capture, [1], list}]),
+      case vortex_core_page:fetch(Uri) of
+        notfound ->
 
-      ResultDomain = re:run(Uri, ?REDOMAIN,[{capture,[1],list}]),
+          ResultTitle = re:run(Page, "<title.*?>(.*?)</title>", [notbol, {capture, [1], list}]),
 
-      RawDomain = case ResultDomain of
-        {match, [D]} -> D;
-        nomatch -> "naoencontrado"
+          ResultDomain = re:run(Uri, ?REDOMAIN,[{capture,[1],list}]),
+
+          RawDomain = case ResultDomain of
+            {match, [D]} -> D;
+            nomatch -> "naoencontrado"
+          end,
+
+          RawTitle = case ResultTitle of
+            {match, [T]} -> T;
+            nomatch -> "Sem titulo"
+          end,
+
+          Title = vortex_core_utils:force_string_list(RawTitle),
+          Domain = vortex_core_utils:force_string_list(RawDomain),
+
+          NewPage = vortex_core_page:to_page(Domain, Title, Page),
+          vortex_core_page:save(NewPage, Uri),
+
+          % Salvar imagem no banco
+          % TODO: Remover isso assim q possivel e colocar no banco.
+          save_images_in_page(Uri, Page);
+        {page, _} ->
+
+          % TODO: Verificar se faz tempo que foi lida
+          
+          ok
       end,
 
-      RawTitle = case ResultTitle of
-        {match, [T]} -> T;
-        nomatch -> "Sem titulo"
-      end,
+      Result = re:run(Page,"<a.*?href=['\"](.*?)['\"].*?>",[global, {capture, [1], list}]),
 
-      Title = vortex_core_utils:force_string_list(RawTitle),
-      Domain = vortex_core_utils:force_string_list(RawDomain),
-
-      NewPage = vortex_core_page:to_page(Domain, Title, Page),
-      vortex_core_page:save(NewPage, Uri),
-
-      % Salvar imagem no banco
-      % TODO: Remover isso assim q possivel e colocar no banco.
-      save_images_in_page(Uri, Page);
-    {page, _} ->
-
-      % TODO: Verificar se faz tempo que foi lida
-      
-      ok
-  end,
-
-  Result = re:run(Page,"<a.*?href=['\"](.*?)['\"].*?>",[global, {capture, [1], list}]),
-
-  case Result of
-    {match, Links} ->
-      Links;
-    _Else ->
+      case Result of
+        {match, Links} ->
+          Links;
+        _Else ->
+          []
+      end;
+    {error, in_use} ->
       []
   end.
 

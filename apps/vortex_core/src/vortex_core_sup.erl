@@ -19,7 +19,7 @@ start_link() ->
   {ok, Pid}.
 
 init(_Args) ->
-     RestartStrategy = {simple_one_for_one, 10, 60},
+     RestartStrategy = {simple_one_for_one, 100000, 6},
      ChildSpec = {vortex_core_extractdata, {vortex_core_extractdata, start_link, []},
           permanent, brutal_kill, worker, [vortex_core_extractdata]},
      Children = [ChildSpec],
