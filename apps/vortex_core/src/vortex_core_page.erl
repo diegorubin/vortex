@@ -1,5 +1,5 @@
 -module(vortex_core_page).
--export([to_page/3, all_of_domain/1, save/2, fetch/1, delete/1, url_to_key/1]).
+-export([to_page/3, all_of_domain/1, save/2, fetch/1, delete/1, url_to_key/1, find/2]).
 
 -define(BUCKET, <<"pages">>).
 
