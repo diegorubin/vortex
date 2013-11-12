@@ -1,7 +1,34 @@
 -module(vortex_core_extractdata).
 -author('rubin.diego@gmail.com').
 
+-behaviour(gen_server).
+
 -export([getlinks/1, getlinks/2, getpage/1]).
+-export([init/1, start_link/0, handle_cast/2]).
+
+% not implemented
+-export([terminate/2, handle_call/3, code_change/3, handle_info/2]).
+
+-define(REDOMAIN, "^https?://([0-9a-zA-Z-.]+)/?").
+
+init(_Args) ->
+  io:format("has started (~w)~n", [self()]),
+  {ok, ch1State}.
+
+start_link() ->
+  gen_server:start_link(?MODULE, [], []).
+
+handle_cast(Uri, State) ->
+  getlinks(Uri),
+  {stop, normal, State}.
+
+handle_info(timeout, State) -> {stop, normal, State}.
+
+handle_call(_Arg, _Reason, _State) -> ok.
+
+code_change(_OldVsn, State, _Extra) -> {ok, State}.
+
+terminate(_Reason, _State) -> ok.
 
 % - getlinks
 getlinks(Uri) -> getlinks(Uri, []).
@@ -9,10 +36,6 @@ getlinks(Uri) -> getlinks(Uri, []).
 getlinks(Uri, Domains) ->
   UriWithDomains = put_domain_in_local_paths(getrawlinks(Uri), Uri),
   exclude_in_links(UriWithDomains, Domains).
-
-%
-% Private functions
-%
 
 % - getpage
 getpage(Uri) ->
@@ -43,32 +66,43 @@ getrawlinks(Uri) ->
     {
       {statuscode, _StatusCode},
       {contenttype, _ContentType},
-      {content, Page}
+      {content, RawPage}
     }
   } = getpage(Uri),
 
-  % Sera substituido pela chave do banco
-  FileName = lists:flatten([C || C <- Uri, C /= $/, C /= $:, C /= $#]),
-  OpenResult = file:open(FileName, [read]),
+  Page = vortex_core_utils:force_string_list(RawPage),
 
-  case OpenResult of
-    {error, enoent} ->
+  case vortex_core_page:fetch(Uri) of
+    notfound ->
 
-      % Substitutir para salvar no banco
-      {ok, File} = file:open(FileName, write),
-      io:format(File, "~s", [Page]),
-      file:close(File),
-      % Verificar se faz tempo que foi lida
+      ResultTitle = re:run(Page, "<title.*?>(.*?)</title>", [notbol, {capture, [1], list}]),
 
-      % logica de indexacao
+      ResultDomain = re:run(Uri, ?REDOMAIN,[{capture,[1],list}]),
 
-      % abrir novo thread para cada link
+      RawDomain = case ResultDomain of
+        {match, [D]} -> D;
+        nomatch -> "naoencontrado"
+      end,
+
+      RawTitle = case ResultTitle of
+        {match, [T]} -> T;
+        nomatch -> "Sem titulo"
+      end,
+
+      Title = vortex_core_utils:force_string_list(RawTitle),
+      Domain = vortex_core_utils:force_string_list(RawDomain),
+
+      NewPage = vortex_core_page:to_page(Domain, Title, Page),
+      vortex_core_page:save(NewPage, Uri),
 
       % Salvar imagem no banco
-      % Remover isso assim q possivel e colocar no banco.
+      % TODO: Remover isso assim q possivel e colocar no banco.
       save_images_in_page(Uri, Page);
-    {ok, FileId} ->
-      file:close(FileId)
+    {page, _} ->
+
+      % TODO: Verificar se faz tempo que foi lida
+      
+      ok
   end,
 
   Result = re:run(Page,"<a.*?href=['\"](.*?)['\"].*?>",[global, {capture, [1], list}]),

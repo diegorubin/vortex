@@ -11,8 +11,8 @@ to_page(Domain, Title, Body) ->
   {page,
     [
       {domain, Domain},
-      {title, Title},
-      {body, Body},
+      {title, unicode:characters_to_binary(Title)},
+      {body, unicode:characters_to_binary(Body)},
       {readat, ReadAt}
     ]
   }.

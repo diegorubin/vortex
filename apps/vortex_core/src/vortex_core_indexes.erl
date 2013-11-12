@@ -45,7 +45,7 @@ add_page_in_domain_list(Domain, Page) ->
 
   case fetch(Domain) of
     notfound ->
-      RiakObj = vortex_core_riak:create(?PAGESLIST, Domain, [Page]),
+      RiakObj = vortex_core_riak:create(?PAGESLIST, list_to_binary(Domain), [Page]),
       ok = vortex_core_riak:save(RiakPid, RiakObj),
       [Page];
     List ->
@@ -72,7 +72,11 @@ fetch(Bucket, Key) ->
   end.
 
 total_pages(Domain) ->
-  vortex_core_utils:list_len(fetch(Domain)).
+
+  case fetch(Domain) of
+    notfound -> 0;
+    Pages -> vortex_core_utils:list_len(Pages)
+  end.
   
 clear_index(Domain) ->
   clear_index(?PAGESLIST, Domain).

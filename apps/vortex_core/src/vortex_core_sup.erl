@@ -13,12 +13,15 @@
 -export([init/1]).
 
 start_link() ->
-    Pid=supervisor:start_link({local, ?MODULE} , ?MODULE, []),
-    {ok,Pid}.
+  {ok, Pid} = supervisor:start_link({local, ?MODULE}, 
+     ?MODULE, []),
+  erlang:unlink(Pid),
+  {ok, Pid}.
 
 init(_Args) ->
-     io:format("ch1 has started (~w)~n", [self()]),
-     % If the initialization is successful, the function
-     % should return {ok,State}, {ok,State,Timeout} ..
-     {ok, ch1State}.
+     RestartStrategy = {simple_one_for_one, 10, 60},
+     ChildSpec = {vortex_core_extractdata, {vortex_core_extractdata, start_link, []},
+          permanent, brutal_kill, worker, [vortex_core_extractdata]},
+     Children = [ChildSpec],
+     {ok, {RestartStrategy, Children}}.
 

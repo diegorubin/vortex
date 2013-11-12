@@ -5,6 +5,7 @@
 
 -module(vortex_core).
 -author('Diego Rubin <rubin.diego@gmail.com>').
+
 -export([start/0, start_link/0, stop/0]).
 
 ensure_started(App) ->
