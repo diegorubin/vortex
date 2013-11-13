@@ -7,7 +7,7 @@
 -export([init/1, start_link/0, handle_cast/2]).
 
 % not implemented
--export([terminate/2, handle_call/3, code_change/3, handle_info/2, watch/1]).
+-export([terminate/2, handle_call/3, code_change/3, handle_info/2, watch/1, save_images_in_page/2]).
 
 -define(REDOMAIN, "^https?://([0-9a-zA-Z-.]+)/?").
 
@@ -97,15 +97,9 @@ getrawlinks(Uri) ->
           Domain = vortex_core_utils:force_string_list(RawDomain),
 
           NewPage = vortex_core_page:to_page(Domain, Title, Page),
-          vortex_core_page:save(NewPage, Uri),
+          vortex_core_page:save(NewPage, Uri);
 
-          % Salvar imagem no banco
-          % TODO: Remover isso assim q possivel e colocar no banco.
-          save_images_in_page(Uri, Page);
         {page, _} ->
-
-          % TODO: Verificar se faz tempo que foi lida
-          
           ok
       end,
 
