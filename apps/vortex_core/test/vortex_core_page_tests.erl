@@ -12,8 +12,8 @@ to_page_test_() ->
                                    "Pagina Pessoal", "<html></html>"),
 
       ?assertEqual({page, [{domain, "http://diegorubin.com"},
-                           {title, "Pagina Pessoal"},
-                           {body, "<html></html>"},
+                           {title, <<"Pagina Pessoal">>},
+                           {body, <<"<html></html>">>},
                            {readat, ReadAt}]}, Result)
     end}].
 

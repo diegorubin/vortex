@@ -12,7 +12,6 @@
 -define(REDOMAIN, "^https?://([0-9a-zA-Z-.]+)/?").
 
 init(_Args) ->
-  io:format("has started (~w)~n", [self()]),
   {ok, ch1State}.
 
 start_link() ->
