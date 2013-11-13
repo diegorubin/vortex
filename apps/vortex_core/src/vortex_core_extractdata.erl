@@ -12,7 +12,7 @@
 -define(REDOMAIN, "^https?://([0-9a-zA-Z-.]+)/?").
 
 init(_Args) ->
-  {ok, ch1State}.
+  {ok, []}.
 
 start_link() ->
   gen_server:start_link(?MODULE, [], []).
@@ -20,7 +20,7 @@ start_link() ->
 handle_cast(Uri, State) ->
   Links = getlinks(Uri),
   [watch(Link) || [Link] <- Links], 
-  {stop, normal, State}.
+  {stop, shutdown, State}.
 
 handle_info(timeout, State) -> {stop, normal, State}.
 
@@ -32,8 +32,12 @@ terminate(_Reason, _State) -> ok.
 
 % watch
 watch(Uri) ->
-  {ok, Pid} = supervisor:start_child(vortex_core_sup, []),
-  gen_server:cast(Pid, Uri).
+  case vortex_core_page:fetch(Uri) of 
+    {page, _} -> repeated;
+    notfound -> 
+      {ok, Pid} = supervisor:start_child(vortex_core_sup, []),
+      gen_server:cast(Pid, Uri)
+  end.
 
 % - getlinks
 getlinks(Uri) -> getlinks(Uri, []).

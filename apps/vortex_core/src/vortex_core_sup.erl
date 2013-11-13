@@ -13,15 +13,12 @@
 -export([init/1]).
 
 start_link() ->
-  {ok, Pid} = supervisor:start_link({local, ?MODULE}, 
-     ?MODULE, []),
-  erlang:unlink(Pid),
-  {ok, Pid}.
+  supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init(_Args) ->
-     RestartStrategy = {simple_one_for_one, 10, 1},
+     RestartStrategy = {simple_one_for_one, 1000, 1},
      ChildSpec = {vortex_core_extractdata, {vortex_core_extractdata, start_link, []},
-          temporary, brutal_kill, worker, [vortex_core_extractdata]},
+          permanent, brutal_kill, worker, [vortex_core_extractdata]},
      Children = [ChildSpec],
      {ok, {RestartStrategy, Children}}.
 
