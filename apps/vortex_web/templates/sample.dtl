@@ -1,1 +1,78 @@
-<html><body>Hello from inside ErlyDTL. You passed in {{ param }}.</body></html>
+<html>
+  <head>
+    <title> Home | Vortex </title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap-theme.min.css">
+
+    <style type="text/css">
+      body {
+        padding-top: 50px;
+      }
+      .search-container{
+        padding: 40px 15px;
+        text-align: center;
+      }
+
+      .infos-container{
+        padding: 40px 15px;
+        text-align: center;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+
+      <div class="search-container">
+        <h1>Vortex</h1>
+
+        <form method="post" action="/search">
+          <input type="text" name="search">
+          <input type="submit" name="submit" value="Enviar">
+        </form>
+      </div>
+
+      <div class="infos-container">
+        <strong>Dom&iacute;nios:</strong>
+        <span id="domains">0</span>
+        <strong>P&aacute;ginas:</strong>
+        <span id="pages">0</span>
+      </div>
+
+    </div><!-- /.container -->
+
+    
+  </body>
+
+  <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
+
+  <script type="text/javascript">
+    function loadinfos() {
+      $.ajax({
+        type: "GET",
+        dataType: "json",
+        url: '/domains',
+        success: function(data) {
+          $("#domains").text(data['total_domains']);
+          $("#pages").text(data['total_pages']);
+
+          setTimeout(function(){
+            loadinfos();
+          }, 1000);
+
+        }
+      });
+    }
+
+    $(function(){
+
+      loadinfos();
+
+    });
+    
+  </script>
+
+</html>
+
