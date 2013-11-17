@@ -22,7 +22,27 @@
   </head>
 
   <body>
-    <div class="container">
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Vortex</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a id="home" class="vortex-section" href="#">Home</a></li>
+            <li><a id="domain" class="vortex-section" href="#about">Dom&iacute;nios</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div id="home-section" class="container section">
 
       <div class="search-container">
         <h1>Vortex</h1>
@@ -41,6 +61,29 @@
       </div>
 
     </div><!-- /.container -->
+
+    <div id="domain-section" class="container section hidden">
+        <h1>Dom&iacute;nios</h1>
+
+        <div class="row">
+
+          <div class="col-md-4">
+            <div id="domain-list-container">
+              <ul id="domain-list" class="list-group">
+              </ul>
+            </div>
+          </div>
+        
+          <div class="col-md-8">
+            <div id="page-list-container">
+              <ul id="page-list">
+              </ul>
+            </div>
+          </div>
+
+        </div>
+
+      </div><!-- /.container -->
 
     
   </body>
@@ -69,6 +112,80 @@
     $(function(){
 
       loadinfos();
+
+      $(".vortex-section").click(function(event){
+        event.preventDefault();
+
+        $(".nav li").removeClass("active");
+        $(this).closest('li').addClass("active");
+
+        $(".section").addClass("hidden");
+        $("#" + $(this).attr("id") + "-section").removeClass("hidden");
+
+        if($(this).attr("id") == "domain") {
+          $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: '/domains',
+            success: function(data) {
+
+              $("#domain-list").html("");
+
+              var domains = data['domains'];
+
+              for(var i =0; i < domains.length; i++) {
+
+                var li = $("<li></li>");
+                li.addClass("list-group-item");
+
+                var name = domains[i].domain.name;
+                var s = $("<span class='badge'>" + domains[i].domain.total + "</span>");
+                var a = $("<a class='page' href='/pages/" + name + "'>" + name + "</a>");
+
+                li.append(s);
+                li.append(a);
+
+                $("#domain-list").append(li);
+              }
+            }
+          });
+        }
+
+      });
+
+      $(document).on("click", ".page", function(event){
+        event.preventDefault();
+
+        var url = $(this).attr('href');
+
+        $.ajax({
+          type: "GET",
+          dataType: "json",
+          url: url,
+          success: function(data) {
+
+            $("#page-list").html("");
+
+            var pages = data['pages'];
+
+            for(var i =0; i < pages.length; i++) {
+
+
+              var li = $("<li></li>");
+
+              var title = pages[i].title;
+              var url = pages[i].url;
+              var a = $("<a target='_blank' href='" + url + "'>" + title + "</a>");
+
+              li.append(a);
+
+              $("#page-list").append(li);
+            }
+          }
+        });
+
+      });
+
 
     });
     
