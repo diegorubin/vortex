@@ -15,8 +15,7 @@ content_types_provided(ReqData, State) ->
   {Types, ReqData, State}.
 
 to_json(ReqData, State) ->
-  PathInfo = wrq:path_info(ReqData),
-  [{url, Url}] = PathInfo,
+  Url = wrq:get_qs_value("url",ReqData),
 
   vortex_core_extractdata:watch(Url),
 
