@@ -96,7 +96,8 @@ getrawlinks(Uri) ->
           Title = vortex_core_utils:force_string_list(RawTitle),
           Domain = vortex_core_utils:force_string_list(RawDomain),
 
-          NewPage = vortex_core_page:to_page(Domain, Title, Page),
+          NewPage = vortex_core_page:to_page(Domain, Title, Uri),
+          vortex_core_page:save_document(Page, Uri),
           vortex_core_page:save(NewPage, Uri);
 
         {page, _} ->

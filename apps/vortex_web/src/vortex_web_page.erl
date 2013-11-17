@@ -39,7 +39,7 @@ pages_to_list_of_links(Pages, List) ->
 
   case vortex_core_page:fetch(Head) of
     {page,PageData} -> 
-      [{key, _Key}, {domain, _Domain}, {title, Title}, {body, _Body}, {readat, _ReadAt}] = PageData,
+      [{key, _Key}, {domain, _Domain}, {title, Title}, {url, _Url}, {readat, _ReadAt}] = PageData,
       NewList = ["{\"title\":\"" ++ Title ++ "\", \"url\":\"" ++ Head ++ "\"}" |List],
       pages_to_list_of_links(Tail, NewList);
     notfound -> 

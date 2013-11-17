@@ -1,9 +1,10 @@
 -module(vortex_core_page).
--export([to_page/3, all_of_domain/1, save/2, fetch/1, delete/1, url_to_key/1, find/2]).
+-export([to_page/3, all_of_domain/1, save/2, save_document/2, fetch/1, delete/1, url_to_key/1, find/1]).
 
 -define(BUCKET, <<"pages">>).
+-define(PAGEBUCKET, <<"rawpages">>).
 
-to_page(Domain, Title, Body) ->
+to_page(Domain, Title, Url) ->
   {{Year, Month, Day},{Hour, Minute, Second}} = erlang:universaltime(),
   ReadAt = vortex_core_json:to_json([{year, Year}, {month, Month}, {day, Day}, {hour, Hour},
                                 {minute, Minute}, {second, Second}]),
@@ -12,19 +13,18 @@ to_page(Domain, Title, Body) ->
     [
       {domain, Domain},
       {title, unicode:characters_to_binary(Title)},
-      {body, unicode:characters_to_binary(Body)},
+      {url, Url},
       {readat, ReadAt}
     ]
   }.
 
 all_of_domain(Domain) ->
-  RiakPid = vortex_core_riak:connect(),
   Urls = vortex_core_indexes:fetch(Domain),
-  Pages = [find(RiakPid, url_to_key(Url)) || Url <- Urls],
+  Pages = [find(url_to_key(Url)) || Url <- Urls],
   lists:delete(notfound, Pages).
 
-find(RiakPid, Key) -> 
-  case vortex_core_riak:fetch(RiakPid, ?BUCKET, Key) of
+find(Key) -> 
+  case vortex_core_riak:fetch(?BUCKET, Key) of
   {ok, RiakObj} -> 
     PageJson = vortex_core_riak:get_value(RiakObj),
     from_json_internal(PageJson);
@@ -33,33 +33,44 @@ find(RiakPid, Key) ->
   end.
 
 fetch(Url) ->
-  RiakPid = vortex_core_riak:connect(),
   Key = url_to_key(Url),
-  find(RiakPid, Key).
+  find(Key).
 
 save(Page={page, PageData}, Url) ->
-  RiakPid = vortex_core_riak:connect(),
   Key = url_to_key(Url),
   case fetch(Url) of
     notfound ->
       NewPageData = [{key, Key} | PageData],
       RiakObj = vortex_core_riak:create(?BUCKET, Key, to_json_internal(NewPageData)),
-      ok = vortex_core_riak:save(RiakPid, RiakObj),
+      ok = vortex_core_riak:save(RiakObj),
 
       vortex_core_indexes:add_page_in_domain_list(Url),
 
       {page, NewPageData};
     {page, _} ->
-      {ok, RiakObj} = vortex_core_riak:fetch(RiakPid, ?BUCKET, Key),
+      {ok, RiakObj} = vortex_core_riak:fetch(?BUCKET, Key),
       NewRiakObj = vortex_core_riak:update(RiakObj, to_json_internal(PageData)),
-      ok = vortex_core_riak:save(RiakPid, NewRiakObj),
+      ok = vortex_core_riak:save(NewRiakObj),
+      Page
+  end.
+
+save_document(Page, Url) ->
+  Key = url_to_key(Url),
+  case fetch(Url) of
+    notfound ->
+      RiakObj = vortex_core_riak:create(?PAGEBUCKET, Key, Page, "text/html"),
+      ok = vortex_core_riak:save(RiakObj),
+      Page;
+     _ ->
+      {ok, RiakObj} = vortex_core_riak:fetch(?PAGEBUCKET, Key),
+      NewRiakObj = vortex_core_riak:update(RiakObj, Page),
+      ok = vortex_core_riak:save(NewRiakObj),
       Page
   end.
 
 delete(Url) ->
   Key = url_to_key(Url),
-  RiakPid = vortex_core_riak:connect(),
-  vortex_core_riak:delete(RiakPid, ?BUCKET, Key).
+  vortex_core_riak:delete(?BUCKET, Key).
 
 to_json_internal(PageData) ->
   unicode:characters_to_binary(vortex_core_json:to_json(PageData, fun is_string/1)).
