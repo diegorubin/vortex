@@ -18,11 +18,11 @@ start_link() ->
   gen_server:start_link(?MODULE, [], []).
 
 handle_cast(Uri, State) ->
-  Links = getlinks(Uri),
-  [watch(Link) || [Link] <- Links], 
-  {stop, shutdown, State}.
+  _Links = getlinks(Uri),
+%  [watch(Link) || [Link] <- Links], 
+  {stop, normal, State}.
 
-handle_info(timeout, State) -> {stop, normal, State}.
+handle_info(timeout, State) -> {stop, shutdown, State}.
 
 handle_call(_Arg, _Reason, _State) -> ok.
 
@@ -35,9 +35,23 @@ watch(Uri) ->
   case vortex_core_page:fetch(Uri) of 
     {page, _} -> repeated;
     notfound -> 
+      wait_for_pids(4, Uri),
       {ok, Pid} = supervisor:start_child(vortex_core_sup, []),
       gen_server:cast(Pid, Uri)
   end.
+
+wait_for_pids(TotalPids, Uri) ->
+  [{specs,_S},{active,CurrentPids},{supervisors,_Sup},{workers, _W}] = 
+    supervisor:count_children(vortex_core_sup),
+  wait_for_pids(CurrentPids, TotalPids, Uri).
+
+wait_for_pids(CurrentPids, TotalPids, Uri) when CurrentPids >= TotalPids ->
+  timer:sleep(1000),
+  io:format("Esperando: ~s (esperando ~p/~p) ~n", [Uri, CurrentPids, TotalPids]),
+  wait_for_pids(CurrentPids, TotalPids, Uri);
+wait_for_pids(_CurrentPids, _TotalPids, Uri) ->
+  io:format("Iniciando: ~s ~n", [Uri]),
+  ok.
 
 % - getlinks
 getlinks(Uri) -> getlinks(Uri, []).
