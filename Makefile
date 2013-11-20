@@ -19,7 +19,7 @@ distclean: clean
 	@./rebar delete-deps
 
 webstart: app
-	exec erl -pa $(PWD)/apps/*/ebin -pa $(PWD)/deps/*/ebin -boot start_sasl -s reloader -s vortex_core -s vortex_web
+	exec erl -pa $(PWD)/apps/*/ebin -pa $(PWD)/deps/*/ebin -boot start_sasl -s reloader -s vortex_core -s vortex_web -s vortex_indexer
 
 test:
 	rm -rf .eunit

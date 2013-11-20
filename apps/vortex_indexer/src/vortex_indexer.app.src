@@ -1,0 +1,18 @@
+%%-*- mode: erlang -*-
+{application, vortex_indexer,
+ [
+  {description, "vortex_indexer"},
+  {vsn, "1"},
+  {modules, []},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  riakc,
+                  inets,
+                  crypto,
+                  mochiweb
+                 ]},
+  {mod, { vortex_indexer_app, []}},
+  {env, []}
+ ]}.
