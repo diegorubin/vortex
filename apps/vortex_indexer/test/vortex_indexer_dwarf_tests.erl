@@ -21,7 +21,7 @@ get_body_test_() ->
     end}].
 
 get_tokens_test_() ->
-  [{"get only body of text",
+  [{"get tokens of body",
     fun() -> 
 
       Page = "<html>
@@ -35,5 +35,13 @@ get_tokens_test_() ->
 
       Result = vortex_indexer_dwarf:get_tokens(Page),
       ?assertEqual(["uma", "pagina", "simples"], Result)
+    end}].
+
+remove_stopwords_test_() ->
+  [{"remove stop words",
+    fun() -> 
+      Words = ["uma", "pagina", "simples"],
+      Result = vortex_indexer_dwarf:remove_stopwords(Words),
+      ?assertEqual(["pagina", "simples"], Result)
     end}].
 
