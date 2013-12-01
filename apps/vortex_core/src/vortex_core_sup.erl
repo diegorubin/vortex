@@ -16,9 +16,11 @@ start_link() ->
   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init(_Args) ->
-     RestartStrategy = {simple_one_for_one, 1000, 1},
-     ChildSpec = {vortex_core_extractdata, {vortex_core_extractdata, start_link, []},
-          permanent, 1000, worker, [vortex_core_extractdata]},
-     Children = [ChildSpec],
-     {ok, {RestartStrategy, Children}}.
+  ets:new(ep, [named_table, public, set, {keypos, 1}]), 
+  ets:insert(ep, {pids, 1}),
+  RestartStrategy = {simple_one_for_one, 1000, 1},
+  ChildSpec = {vortex_core_extractdata, {vortex_core_extractdata, start_link, []},
+       permanent, 1000, worker, [vortex_core_extractdata]},
+  Children = [ChildSpec],
+  {ok, {RestartStrategy, Children}}.
 

@@ -1,7 +1,7 @@
 {application,vortex_web,
              [{description,"Interface web para o indexador Vortex"},
               {vsn,"0.0.1"},
-              {modules,[sample_dtl,snippet_dtl,vortex_web,vortex_web_app,
+              {modules,[sample_dtl,vortex_web,vortex_web_app,
                         vortex_web_domain,vortex_web_home,vortex_web_page,
                         vortex_web_sup,vortex_web_watch]},
               {registered,[]},

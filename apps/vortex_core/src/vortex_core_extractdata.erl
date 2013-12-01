@@ -18,8 +18,8 @@ start_link() ->
   gen_server:start_link(?MODULE, [], []).
 
 handle_cast(Uri, State) ->
-  _Links = getlinks(Uri),
-%  [watch(Link) || [Link] <- Links], 
+  Links = getlinks(Uri),
+  [watch(Link) || [Link] <- Links], 
   {stop, normal, State}.
 
 handle_info(timeout, State) -> {stop, shutdown, State}.
@@ -32,25 +32,30 @@ terminate(_Reason, _State) -> ok.
 
 % watch
 watch(Uri) ->
+  io:format("watching ~s~n", [Uri]),
   case vortex_core_page:fetch(Uri) of 
     {page, _} -> repeated;
     notfound -> 
-      wait_for_pids(4, Uri),
+      wait_for_pids(10, Uri),
       {ok, Pid} = supervisor:start_child(vortex_core_sup, []),
       gen_server:cast(Pid, Uri)
   end.
 
 wait_for_pids(TotalPids, Uri) ->
-  [{specs,_S},{active,CurrentPids},{supervisors,_Sup},{workers, _W}] = 
-    supervisor:count_children(vortex_core_sup),
-  wait_for_pids(CurrentPids, TotalPids, Uri).
+  [{pids, CurrentPids}] = ets:lookup(ep, pids),
+  io:format("Utilizando:  ~p/~p ~n", [CurrentPids, TotalPids]),
+  wait_for_pids(CurrentPids, TotalPids, Uri, 1).
 
-wait_for_pids(CurrentPids, TotalPids, Uri) when CurrentPids >= TotalPids ->
+wait_for_pids(_CurrentPids, _TotalPids, _Uri, N) when N >= 500 ->
+  io:format("~n~nlimpando fila de pids~n~n"),
+  ets:update_counter(ep, pids, -4);
+wait_for_pids(CurrentPids, TotalPids, Uri, N) when CurrentPids >= TotalPids ->
   timer:sleep(1000),
-  io:format("Esperando: ~s (esperando ~p/~p) ~n", [Uri, CurrentPids, TotalPids]),
-  wait_for_pids(CurrentPids, TotalPids, Uri);
-wait_for_pids(_CurrentPids, _TotalPids, Uri) ->
-  io:format("Iniciando: ~s ~n", [Uri]),
+  [{pids, NewCurrentPids}] = ets:lookup(ep, pids),
+  io:format("Esperando: (~p/~p tentativa ~p) ~s  ~n", [ NewCurrentPids, TotalPids, N, Uri]),
+  wait_for_pids(NewCurrentPids, TotalPids, Uri, N + 1);
+wait_for_pids(_CurrentPids, _TotalPids, Uri, _N) ->
+  io:format("Iniciando em: ~s ~n", [Uri]),
   ok.
 
 % - getlinks
@@ -63,8 +68,10 @@ getlinks(Uri, Domains) ->
 % - getpage
 getpage(Uri) ->
 
+  ets:update_counter(ep, pids, 1),
   {ok, {{_Version, StatusCode, _ReasonPhrase}, Headers, Content}} =
     httpc:request(get, {Uri, []}, [], []),
+  ets:update_counter(ep, pids, -1),
 
   [ContentType|_] = [CT || {"content-type", CT} <- Headers],
 
@@ -119,6 +126,7 @@ getrawlinks(Uri) ->
       end,
 
       Result = re:run(Page,"<a.*?href=['\"](.*?)['\"].*?>",[global, {capture, [1], list}]),
+
 
       case Result of
         {match, Links} ->
