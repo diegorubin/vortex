@@ -36,7 +36,7 @@ watch(Uri) ->
   case vortex_core_page:fetch(Uri) of 
     {page, _} -> repeated;
     notfound -> 
-      wait_for_pids(10, Uri),
+      wait_for_pids(5, Uri),
       {ok, Pid} = supervisor:start_child(vortex_core_sup, []),
       gen_server:cast(Pid, Uri)
   end.
@@ -48,9 +48,9 @@ wait_for_pids(TotalPids, Uri) ->
 
 wait_for_pids(_CurrentPids, _TotalPids, _Uri, N) when N >= 500 ->
   io:format("~n~nlimpando fila de pids~n~n"),
-  ets:update_counter(ep, pids, -4);
+  ets:update_counter(ep, pids, -2);
 wait_for_pids(CurrentPids, TotalPids, Uri, N) when CurrentPids >= TotalPids ->
-  timer:sleep(1000),
+  timer:sleep(2000),
   [{pids, NewCurrentPids}] = ets:lookup(ep, pids),
   io:format("Esperando: (~p/~p tentativa ~p) ~s  ~n", [ NewCurrentPids, TotalPids, N, Uri]),
   wait_for_pids(NewCurrentPids, TotalPids, Uri, N + 1);
