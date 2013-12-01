@@ -48,7 +48,7 @@ wait_for_pids(TotalPids, Uri) ->
 
 wait_for_pids(_CurrentPids, TotalPids, Uri, N) when N >= 60 ->
   io:format("~n~nlimpando fila de pids~n~n"),
-  NewCurrentPids = ets:update_counter(ep, pids, -2),
+  NewCurrentPids = ets:update_counter(ep, pids, -1),
   wait_for_pids(NewCurrentPids, TotalPids, Uri, 1);
 wait_for_pids(CurrentPids, TotalPids, Uri, N) when CurrentPids >= TotalPids ->
   timer:sleep(2000),
